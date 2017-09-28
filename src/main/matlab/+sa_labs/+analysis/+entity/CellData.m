@@ -2,6 +2,7 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
     
     properties
         epochs
+        deviceType
     end
     
     properties (Dependent)
