@@ -1,4 +1,4 @@
-classdef Symphony2Parser < sa_labs.analysis.parser.SymphonyParser
+classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
     
     % experiement (1)
     %   |__devices (1)
@@ -21,26 +21,42 @@ classdef Symphony2Parser < sa_labs.analysis.parser.SymphonyParser
     
     methods
         
+        function obj = SymphonyV2Parser(fname)
+            obj = obj@sa_labs.analysis.parser.SymphonyParser(fname);
+        end
+        
         function obj = parse(obj)
             import sa_labs.analysis.*;
             
-            info = h5info(obj.fname);
-            epochsByCellMap = obj.getEpochsByCellLabel(info.Groups(1).Groups(2).Groups);
-            sourceLinks = info.Groups(1).Groups(5).Links;
+            epochsByCellMap = obj.getEpochsByCellLabel(obj.info.Groups(1).Groups(2).Groups);
+            sourceLinks = obj.info.Groups(1).Groups(5).Links;
             sourceTree = tree();
             
+            tic;
             for i = 1 : numel(sourceLinks)
                 sourceTree = sourceTree.graft(1, obj.buildSourceTree(sourceLinks(i).Value{:}));
             end
+            elapsedTime = toc;
+            obj.log.debug(['Generating source tree in [ ' num2str(elapsedTime) ' s ]' ]);
             
-            numberOfCells = numel(epochsByCellMap.keys);
-            cells = entity.CellData.empty(numberOfCells, 0);
+            numberOfClusters = numel(epochsByCellMap.keys);
+            cells = entity.CellData.empty(0, numberOfClusters);
             labels = epochsByCellMap.keys;
             
-            for i = 1 : numberOfCells
+            for i = 1 : numberOfClusters
                 h5epochs =  epochsByCellMap(labels{i});
-                cells(i) = obj.buildCellData(labels{i}, h5epochs);
-                cells(i).attributes = obj.getSourceAttributes(sourceTree, labels{i}, cells(i).attributes);
+                tic;
+                cluster = obj.buildCellData(labels{i}, h5epochs);
+                cluster.attributes = obj.getSourceAttributes(sourceTree, labels{i}, cluster.attributes);
+                
+                for device = each(unique(cluster.getEpochValues('devices')))
+                    cell = entity.CellData();
+                    cell.attributes = cluster.attributes;
+                    cell.epochs = cluster.epochs;
+                    cell.attributes('recordingLabel') =  strcat(cell.attributes('recordingLabel'), '_', device);
+                    cells(end + 1) = cell;  %#ok <AGROW> Amplifer specific cell data
+                end
+                cells(end + 1) = cluster;  %#ok <AGROW> All the amplifier grouped in one cell data
             end
             obj.cellDataArray = cells;
         end
@@ -89,8 +105,8 @@ classdef Symphony2Parser < sa_labs.analysis.parser.SymphonyParser
                     endOffSet = strfind(group, '/epochBlocks');
                     try
                         parameterMap = obj.buildAttributes([group(1 : endOffSet) 'properties'], parameterMap);
-                    catch e
-                        disp('properties not found in epoch group');
+                    catch e %#ok
+                        obj.log.debug(['properties not found for protocol [ ' name ' ] having label [ ' label ' ]']);
                     end
                 end
                 lastProtocolId = protocolId;
@@ -140,7 +156,7 @@ classdef Symphony2Parser < sa_labs.analysis.parser.SymphonyParser
             else
                 source = epochGroup.Links(2).Value{:};
             end
-            try 
+            try
                 label = h5readatt(obj.fname, source, 'label');
             catch
                 source = epochGroup.Links(2).Value{:};
@@ -156,7 +172,8 @@ classdef Symphony2Parser < sa_labs.analysis.parser.SymphonyParser
         end
         
         function sourceTree = buildSourceTree(obj, sourceLink, sourceTree, level)
-            
+            % The most time consuming part while parsing the h5 file
+
             if nargin < 3
                 sourceTree = tree();
                 level = 0;
@@ -205,14 +222,14 @@ classdef Symphony2Parser < sa_labs.analysis.parser.SymphonyParser
         
         function map = getSourceAttributes(~, sourceTree, label, map)
             import sa_labs.analysis.util.collections.*;
-             id = find(sourceTree.treefun(@(node) ~isempty(node) && strcmp(node('label'), label)));
+            id = find(sourceTree.treefun(@(node) ~isempty(node) && strcmp(node('label'), label)));
             
             while id > 0
                 currentMap = sourceTree.get(id);
                 id = sourceTree.getparent(id);
                 
                 if isempty(currentMap)
-                   continue;
+                    continue;
                 end
                 
                 keys = currentMap.keys;

@@ -1,4 +1,4 @@
-classdef DefaultSymphonyParser < sa_labs.analysis.parser.SymphonyParser
+classdef SymphonyV1Parser < sa_labs.analysis.parser.SymphonyParser
     
     % cell-name.h5
     %   |_ <recorded_by>-<id> (1)
@@ -18,6 +18,10 @@ classdef DefaultSymphonyParser < sa_labs.analysis.parser.SymphonyParser
     end
     
     methods
+        
+        function obj = SymphonyV1Parser(fname)
+            obj = obj@sa_labs.analysis.parser.SymphonyParser(fname);
+        end
         
         function obj = parse(obj)
             import sa_labs.analysis.*;

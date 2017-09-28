@@ -10,23 +10,23 @@ classdef ParserTest < matlab.unittest.TestCase
         SYMPHONY_V1_FILE = 'symphony_v1.h5'
         SYMPHONY_V2_FILE = 'symphony_v2.h5'   % TODO replace with json or other format
         TEST_FILE = 'test.h5';
-        SYMPHONY_2_EXP_FILE = '112216A.h5';
+        SYMPHONY_2_EXP_FILE = '2017-09-27.h5';
     end
     
     methods (TestClassSetup)
         function setSkipTest(obj)
             obj.path = [fileparts(which('test.m')) filesep 'fixtures' filesep 'parser' filesep];
-            
+
             if ~ exist(obj.path, 'file')
                 mkdir(obj.path)
             end
             
             if ~ exist([obj.path obj.SYMPHONY_V1_FILE], 'file') && ~ exist([obj.path obj.SYMPHONY_V2_FILE], 'file')
                 obj.skipTest = true;
-                obj.skipMessage = @(test)(['Skipping ' class(obj) '.' test ' ; '...
-                    obj.SYMPHONY_V1_FILE ' and ' obj.SYMPHONY_V2_FILE...
-                    ' are not found in matlab path']);
             end
+            obj.skipMessage = @(test)(['Skipping ' class(obj) '.' test ' ; '...
+                obj.SYMPHONY_V1_FILE ' and ' obj.SYMPHONY_V2_FILE...
+                ' are not found in matlab path']);
         end
     end
     
@@ -51,9 +51,9 @@ classdef ParserTest < matlab.unittest.TestCase
             import sa_labs.analysis.*;
             
             ref = factory.ParserFactory.getInstance([obj.path obj.SYMPHONY_V1_FILE]);
-            obj.verifyClass(ref, ?sa_labs.analysis.parser.DefaultSymphonyParser);
+            obj.verifyClass(ref, ?sa_labs.analysis.parser.SymphonyV1Parser);
             ref = factory.ParserFactory.getInstance([obj.path obj.SYMPHONY_V2_FILE]);
-            obj.verifyClass(ref, ?sa_labs.analysis.parser.Symphony2Parser);
+            obj.verifyClass(ref, ?sa_labs.analysis.parser.SymphonyV2Parser);
         end
         
         function testMapAttributes(obj)
@@ -82,7 +82,7 @@ classdef ParserTest < matlab.unittest.TestCase
             
         end
         
-        function testSymphony2Parse(obj)
+        function testSymphonyParse(obj)
             if(obj.skipTest)
                 disp(obj.skipMessage('testParse'));
                 return;
@@ -100,19 +100,10 @@ classdef ParserTest < matlab.unittest.TestCase
             obj.verifyEqual(name, 'fi.helsinki.biosci.ala_laurila.protocols.LedPulse')
             validate('Amp1');
             
-            % Parsing complex symphony file
-            fname = [obj.path obj.SYMPHONY_2_EXP_FILE];
-            if exist(fname, 'file')
-                ref = parser.getInstance(fname);
-                validate('Amp1');
-            end
-            
             % Parse symphony_v1 file and validate
             fname = [obj.path obj.SYMPHONY_V1_FILE];
             ref = factory.ParserFactory.getInstance(fname);
             validate('Amplifier_Ch1');
-            
-            
             
             function validate(amplifier)
                 
@@ -133,6 +124,13 @@ classdef ParserTest < matlab.unittest.TestCase
                 data = epoch.getResponse(amplifier);
                 obj.verifyEqual(numel(data.quantity), (duration / 10^3) * samplingRate);
             end
+        end
+        
+        function testSymphony2Parse(obj)
+            import sa_labs.analysis.*;
+            fname = [obj.path obj.SYMPHONY_2_EXP_FILE];
+            ref = factory.ParserFactory.getInstance(fname);
+            result = ref.parse().getResult();
         end
     end
 end

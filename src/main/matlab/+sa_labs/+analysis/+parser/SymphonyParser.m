@@ -1,10 +1,22 @@
 classdef SymphonyParser < handle
     
-    properties
+    properties (Access = protected)
         fname
+        log
+        info
     end
     
     methods
+        
+        function obj = SymphonyParser(fname)
+            obj.log = logging.getLogger(sa_labs.analysis.app.Constants.ANALYSIS_LOGGER);
+            obj.fname = fname;
+            tic;
+            obj.info = h5info(fname);
+            elapsedTime = toc;
+            [~, name, ~] = fileparts(fname);
+            obj.log.debug(['Elapsed Time for genearting info index for file [ ' name ' ] is [ ' num2str(elapsedTime) ' s ]' ]);
+        end
         
         function map = mapAttributes(obj, h5group, map)
             if nargin < 3

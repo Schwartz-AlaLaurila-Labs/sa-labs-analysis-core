@@ -14,11 +14,10 @@ classdef ParserFactory < handle & mdepin.Bean
             import sa_labs.analysis.parser.*
             version = SymphonyParser.getVersion(fname);
             if version == 2
-                obj = Symphony2Parser();
+                obj = SymphonyV2Parser(fname);
             else
-                obj = DefaultSymphonyParser();
+                obj = SymphonyV1Parser(fname);
             end
-            obj.fname = fname;
         end
     end
 end
