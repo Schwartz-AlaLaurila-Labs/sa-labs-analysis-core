@@ -62,6 +62,7 @@ classdef SymphonyParser < handle
                         recordingLabel = cellData.attributes('recordingLabel');
                     end
                     cell.attributes('recordingLabel') =  strcat(recordingLabel, '_', device);
+                    cell.deviceType = device;
                     obj.cellDataArray(end + 1) = cell;
                 end
             end

@@ -101,6 +101,9 @@ classdef ParserTest < matlab.unittest.TestCase
             ref.parse();
             validate('Amp1', 2);
             cellData = ref.getResult();
+            obj.verifyEqual(cellData(1).deviceType, 'Amp1');
+            obj.verifyEmpty(cellData(2).deviceType);
+            
             obj.verifyEqual(cellData(1).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V2_FILE, 'c', 'Amp1'));
             obj.verifyEqual(cellData(2).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V2_FILE, 'c'));
             
@@ -110,6 +113,9 @@ classdef ParserTest < matlab.unittest.TestCase
             ref.parse();
             validate('Amplifier_Ch1', 3);
             cellData = ref.getResult();
+            obj.verifyEqual(cellData(1).deviceType, 'Amplifier_Ch1');
+            obj.verifyEqual(cellData(2).deviceType, 'Amplifier_Ch2');
+            obj.verifyEmpty(cellData(3).deviceType);
             obj.verifyEqual(cellData(1).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V1_FILE, '', 'Amplifier_Ch1'));
             obj.verifyEqual(cellData(2).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V1_FILE, '', 'Amplifier_Ch2'));
             obj.verifyEqual(cellData(3).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V1_FILE, ''))
