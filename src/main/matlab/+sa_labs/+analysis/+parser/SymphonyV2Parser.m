@@ -15,10 +15,6 @@ classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
     %                   |            |_data (1)
     %                   |_protocolParameters(2)
     
-    properties
-        cellDataArray
-    end
-    
     methods
         
         function obj = SymphonyV2Parser(fname)
@@ -40,29 +36,14 @@ classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
             obj.log.debug(['Generating source tree in [ ' num2str(elapsedTime) ' s ]' ]);
             
             numberOfClusters = numel(epochsByCellMap.keys);
-            cells = entity.CellData.empty(0, numberOfClusters);
             labels = epochsByCellMap.keys;
             
             for i = 1 : numberOfClusters
                 h5epochs =  epochsByCellMap(labels{i});
-                tic;
-                cluster = obj.buildCellData(labels{i}, h5epochs);
-                cluster.attributes = obj.getSourceAttributes(sourceTree, labels{i}, cluster.attributes);
-                
-                for device = each(unique(cluster.getEpochValues('devices')))
-                    cell = entity.CellData();
-                    cell.attributes = cluster.attributes;
-                    cell.epochs = cluster.epochs;
-                    cell.attributes('recordingLabel') =  strcat(cell.attributes('recordingLabel'), '_', device);
-                    cells(end + 1) = cell;  %#ok <AGROW> Amplifer specific cell data
-                end
-                cells(end + 1) = cluster;  %#ok <AGROW> All the amplifier grouped in one cell data
+                cellData = obj.buildCellData(labels{i}, h5epochs);
+                cellData.attributes = obj.getSourceAttributes(sourceTree, labels{i}, cellData.attributes);
+                obj.addCellDataByAmps(cellData);
             end
-            obj.cellDataArray = cells;
-        end
-        
-        function d = getResult(obj)
-            d = obj.cellDataArray;
         end
         
         function eyeIndex = getEyeIndex(~, location)
@@ -173,7 +154,7 @@ classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
         
         function sourceTree = buildSourceTree(obj, sourceLink, sourceTree, level)
             % The most time consuming part while parsing the h5 file
-
+            
             if nargin < 3
                 sourceTree = tree();
                 level = 0;

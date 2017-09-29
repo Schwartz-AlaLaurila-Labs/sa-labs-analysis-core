@@ -12,11 +12,7 @@ classdef SymphonyV1Parser < sa_labs.analysis.parser.SymphonyParser
     %     |      |_ stimuli
     %     |
     %     |_properties (3) # cell data attributes
-    
-    properties
-        cellData
-    end
-    
+
     methods
         
         function obj = SymphonyV1Parser(fname)
@@ -27,7 +23,7 @@ classdef SymphonyV1Parser < sa_labs.analysis.parser.SymphonyParser
             import sa_labs.analysis.*;
             
             data = entity.CellData();
-
+            
             info = hdf5info(obj.fname);
             info = info.GroupHierarchy(1);
             data.attributes = obj.mapAttributes(info.Groups(1).Groups(3));
@@ -73,7 +69,7 @@ classdef SymphonyV1Parser < sa_labs.analysis.parser.SymphonyParser
             end
             data.attributes('Nepochs') = nEpochs;
             data.h5File = obj.fname;
-            obj.cellData = data;
+            obj.addCellDataByAmps(data);
         end
         
         function map = addDataLinks(~, responseGroups)
@@ -88,11 +84,7 @@ classdef SymphonyV1Parser < sa_labs.analysis.parser.SymphonyParser
                 map(streamName) = streamLink;
             end
         end
-        
-        function data = getResult(obj)
-            data = obj.cellData;
-        end
-        
+                
         function map = mapAttributes(obj, h5group, map)
             if nargin < 3
                 map = containers.Map();

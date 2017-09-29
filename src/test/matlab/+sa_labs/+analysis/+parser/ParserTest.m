@@ -10,13 +10,12 @@ classdef ParserTest < matlab.unittest.TestCase
         SYMPHONY_V1_FILE = 'symphony_v1.h5'
         SYMPHONY_V2_FILE = 'symphony_v2.h5'   % TODO replace with json or other format
         TEST_FILE = 'test.h5';
-        SYMPHONY_2_EXP_FILE = '2017-09-27.h5';
     end
     
     methods (TestClassSetup)
         function setSkipTest(obj)
             obj.path = [fileparts(which('test.m')) filesep 'fixtures' filesep 'parser' filesep];
-
+            
             if ~ exist(obj.path, 'file')
                 mkdir(obj.path)
             end
@@ -59,14 +58,14 @@ classdef ParserTest < matlab.unittest.TestCase
         function testMapAttributes(obj)
             import sa_labs.analysis.*;
             
-            % version 2 validation          
+            % version 2 validation
             fname = [obj.path obj.TEST_FILE];
             h5create(fname ,'/test' , [10 20]);
             h5writeatt(fname, '/', 'version', 2);
             h5writeatt(fname, '/', 'int', 1);
             h5writeatt(fname, '/', 'double', 1.2);
             h5writeatt(fname, '/', 'string', 'test');
-
+            
             ref = factory.ParserFactory.getInstance(fname);
             map = ref.mapAttributes('/');
             obj.verifyEqual(sort(map.keys), {'double', 'int', 'string', 'version'});
@@ -90,6 +89,7 @@ classdef ParserTest < matlab.unittest.TestCase
             import sa_labs.analysis.*;
             
             % Parse symphony_v2 file and validate
+            
             fname = [obj.path obj.SYMPHONY_V2_FILE];
             ref = factory.ParserFactory.getInstance(fname);
             info = h5info(fname);
@@ -98,16 +98,27 @@ classdef ParserTest < matlab.unittest.TestCase
             obj.verifyEqual(numel(epochs), 17);
             [~, name, ~] = ref.getProtocolId(epochs(1).Name);
             obj.verifyEqual(name, 'fi.helsinki.biosci.ala_laurila.protocols.LedPulse')
-            validate('Amp1');
+            ref.parse();
+            validate('Amp1', 2);
+            cellData = ref.getResult();
+            obj.verifyEqual(cellData(1).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V2_FILE, 'c', 'Amp1'));
+            obj.verifyEqual(cellData(2).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V2_FILE, 'c'));
             
             % Parse symphony_v1 file and validate
             fname = [obj.path obj.SYMPHONY_V1_FILE];
             ref = factory.ParserFactory.getInstance(fname);
-            validate('Amplifier_Ch1');
+            ref.parse();
+            validate('Amplifier_Ch1', 3);
+            cellData = ref.getResult();
+            obj.verifyEqual(cellData(1).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V1_FILE, '', 'Amplifier_Ch1'));
+            obj.verifyEqual(cellData(2).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V1_FILE, '', 'Amplifier_Ch2'));
+            obj.verifyEqual(cellData(3).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V1_FILE, ''))
             
-            function validate(amplifier)
+            function validate(amplifier, expectedSize)
                 
-                cellData = ref.parse().getResult();
+                cellData = ref.getResult();
+                obj.verifyLength(cellData, expectedSize);
+                
                 cellData = cellData(1) %#ok
                 epochs = cellData.epochs;
                 previousEpochTime = -1;
@@ -124,13 +135,16 @@ classdef ParserTest < matlab.unittest.TestCase
                 data = epoch.getResponse(amplifier);
                 obj.verifyEqual(numel(data.quantity), (duration / 10^3) * samplingRate);
             end
-        end
-        
-        function testSymphony2Parse(obj)
-            import sa_labs.analysis.*;
-            fname = [obj.path obj.SYMPHONY_2_EXP_FILE];
-            ref = factory.ParserFactory.getInstance(fname);
-            result = ref.parse().getResult();
+            
+            
+            function name = getExpectedRecordingLabel(file, extension, amp)
+                parts = strsplit(file, '.');
+                name = char(strcat(parts(1), extension));
+                if nargin < 3
+                    return;
+                end
+                name = char(strcat(name, '_', amp));
+            end
         end
     end
 end

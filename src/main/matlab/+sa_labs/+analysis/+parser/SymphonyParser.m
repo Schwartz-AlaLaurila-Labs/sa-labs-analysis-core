@@ -4,12 +4,16 @@ classdef SymphonyParser < handle
         fname
         log
         info
+        cellDataArray
     end
     
     methods
         
         function obj = SymphonyParser(fname)
+            import sa_labs.analysis.*;
+            
             obj.log = logging.getLogger(sa_labs.analysis.app.Constants.ANALYSIS_LOGGER);
+            obj.cellDataArray = entity.CellData.empty(0, 0);
             obj.fname = fname;
             tic;
             obj.info = h5info(fname);
@@ -44,6 +48,26 @@ classdef SymphonyParser < handle
             end
         end
         
+        function addCellDataByAmps(obj, cellData)
+            import sa_labs.analysis.*;
+            
+            for device = each(unique(cellData.getEpochValues('devices')))
+                if contains(lower(device), 'amp')
+                    cell = entity.CellData();
+                    cell.attributes = containers.Map(cellData.attributes.keys, cellData.attributes.values);
+                    cell.epochs = cellData.epochs;
+                    
+                    recordingLabel = '';
+                    if isKey(cellData.attributes, 'recordingLabel')
+                        recordingLabel = cellData.attributes('recordingLabel');
+                    end
+                    cell.attributes('recordingLabel') =  strcat(recordingLabel, '_', device);
+                    obj.cellDataArray(end + 1) = cell;
+                end
+            end
+            obj.cellDataArray(end + 1) = cellData;
+        end
+        
         function hrn = convertDisplayName(~, n)
             hrn = regexprep(n, '([A-Z][a-z]+)', ' $1');
             hrn = regexprep(hrn, '([A-Z][A-Z]+)', ' $1');
@@ -55,11 +79,14 @@ classdef SymphonyParser < handle
             
             hrn(1) = upper(hrn(1));
         end
+        
+        function r = getResult(obj)
+            r = obj.cellDataArray;
+        end
     end
     
     methods(Abstract)
         parse(obj)
-        getResult(obj)
     end
     
     methods(Static)
