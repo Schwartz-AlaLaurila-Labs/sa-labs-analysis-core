@@ -28,7 +28,12 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
             end
         end
 
-        function addDerivedResponse(obj, device, key, data)
+        function addDerivedResponse(obj, key, data, device)
+            if nargin < 4
+                device = obj.parentCell.deviceType;
+            end
+            obj.validateDevice(device);
+            
             id = strcat(device, '_', key);
             obj.derivedAttributes(id) = data;
         end
@@ -41,10 +46,9 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
             % device @ see symphony2parser.parse() method for responseHandle
             % definition
 
-            if nargin < 1
-                device = parentCell.deviceType;
-            end
-            
+            if nargin < 2
+                device = obj.parentCell.deviceType;
+            end            
             obj.validateDevice(device);
 
             path = obj.dataLinks(device);
@@ -60,13 +64,13 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
             end
         end 
 
-        function r = getDerivedResponse(obj, device, key)
-            obj.validateDevice(device);
+        function r = getDerivedResponse(obj, key, device)
             
-            if nargin < 1
-                device = parentCell.deviceType;
+            if nargin < 3
+                device = obj.parentCell.deviceType;
             end
-            
+            obj.validateDevice(device);
+
             r = [];
             id = strcat(device, '_', key);
             if isKey(obj.derivedAttributes, id)

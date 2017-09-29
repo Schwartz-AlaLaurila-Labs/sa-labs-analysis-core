@@ -54,6 +54,7 @@ classdef EntityTest < matlab.unittest.TestCase
             
             % test for epoch data behaviour
             obj.verifyEmpty(epochData.getParameters('mode'));
+            obj.verifyEqual(epochData.get('devices'), epochData.dataLinks.keys);
             obj.verifyEqual(epochData.getResponse('Amp1'), 'response1-data');
             obj.verifyError(@() epochData.getResponse('unknown'), 'device:notfound');
             
@@ -67,6 +68,23 @@ classdef EntityTest < matlab.unittest.TestCase
             
             obj.verifyEqual(epochData.unionAttributeKeys(keys), sort(keys));
             obj.verifyEqual(sort(epochData.unionAttributeKeys([])), sort(keys(1 : end-1)));
+            
+            % Test for derived response
+            epochData.addDerivedResponse('spikes', 1 : 5, 'Amp1');
+            epochData.addDerivedResponse('spikes', 6 : 10, 'Amp2');
+            obj.verifyEqual(epochData.getDerivedResponse('spikes', 'Amp1'), 1 : 5);
+            obj.verifyEqual(epochData.getDerivedResponse('spikes', 'Amp2'), 6 : 10);
+
+            obj.verifyError(@() epochData.addDerivedResponse('spikes', 1 : 5, 'unknown'), 'device:notfound');
+            obj.verifyError(@() epochData.getDerivedResponse('spikes', 'unkonwn'), 'device:notfound');
+            obj.verifyError(@() epochData.addDerivedResponse('spikes', 1 : 5), 'device:notfound');
+            obj.verifyError(@() epochData.getDerivedResponse('spikes'), 'device:notfound');
+
+            % Add the default deviceType and check for the spikes
+            epochData.parentCell.deviceType = 'Amp1';
+            epochData.addDerivedResponse('spikes', 11 : 15);            
+            obj.verifyEqual(epochData.getDerivedResponse('spikes'), 11 : 15);
+            obj.verifyEqual(epochData.getDerivedResponse('spikes', 'Amp2'), 6 : 10);
         end
         
     end
