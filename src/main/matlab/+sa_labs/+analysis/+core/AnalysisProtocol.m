@@ -94,8 +94,8 @@ classdef AnalysisProtocol < handle
                     (ischar(split.(desc)) && ~ isempty((strfind(split.(desc), '@')) == 1)) % check for function handle
                 return
             end
-            v = split.(desc);
-            
+            import sa_labs.analysis.util.wrapper.*;
+            v = stringToCell(split.(desc));
             if ischar(v)
                 v = {v};
             end
@@ -105,18 +105,20 @@ classdef AnalysisProtocol < handle
             
             % returns - extractor function for given parameter if parameter
             % not found returns empty
-            
+            import sa_labs.analysis.util.wrapper.*;
             f = [];
             if isKey(obj.functionContext, parameter)
                 f = obj.functionContext(parameter);
             end
+            f = stringToCell(f);
         end
         
         function p = get.copyParameters(obj)
+            import sa_labs.analysis.util.wrapper.*;
             p = [];
             field = sa_labs.analysis.app.Constants.TEMPLATE_COPY_PARAMETERS;
             if isfield(obj.structure, field)
-                p = obj.structure.(field);
+                p = stringToCell(obj.structure.(field));
             end
         end
         
