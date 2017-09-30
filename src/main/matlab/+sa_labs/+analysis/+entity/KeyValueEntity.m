@@ -89,6 +89,14 @@ classdef KeyValueEntity < handle & matlab.mixin.CustomDisplay
             end
             attributeKeys = union(attributeKeys, obj.attributes.keys);
         end
+
+        function s = toStructure(obj)
+            s = struct();
+            names = obj.attributes.keys;
+            for name = each(names)
+                s.(name) = obj.attributes(name);
+            end
+        end
         
     end
     

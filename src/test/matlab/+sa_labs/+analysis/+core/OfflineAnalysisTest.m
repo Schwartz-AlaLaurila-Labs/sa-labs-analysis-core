@@ -13,7 +13,7 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             structure.buildTreeBy = {'EpochGroup', 'deviceStream'};
             structure.featureManager = 'sa_labs.analysis.core.FeatureTreeManager';
             obj.simpleAnalysisProtocol = structure;
-            obj.recordingLabel = 'label';
+            obj.recordingLabel = 'c1';
         end
     end
     
@@ -21,32 +21,47 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
         
         function testBuildTreeSimpleTwoLevel(obj)
             import sa_labs.analysis.*;
-            expectedRoot = @(id) strcat('analysis==', id, '-', obj.recordingLabel);
+
+            structure = struct();
+            structure.type = 'test-analysis';
+            structure.buildTreeBy = {'group', 'stimTime'};
+            structure.featureManager = 'sa_labs.analysis.core.FeatureTreeManager';
             
-            levelOne = containers.Map({'LightStep_20'}, {1 : 50});
-            levelTwo = containers.Map({'Amplifier_Ch1'}, {1 : 50});
-            mockedCellData = Mock(entity.CellData());
-            mockedCellData.when.getEpochValuesMap(AnyArgs()).thenReturn(levelOne, 'EpochGroup')...
-                .thenReturn(levelTwo, 'deviceStream');
-            
-            mockedAmpParameters = cell(1, 50);
-            mockedAmpParameters(:) = {'Amplifier_Ch1'};
-            mockedCellData.when.getParamValues(AnyArgs()).thenReturn({'deviceStream', 'stimTime'}, {mockedAmpParameters, 20 * ones(1, 50)});
-            mockedCellData.when.getEpochKeysetUnion(AnyArgs()).thenReturn({'deviceStream', 'stimTime'});
-            
+            % Happy epoch and cell data !
+            epochs = entity.EpochData.empty(0, 2);
+
+            epochs(1) = entity.EpochData();
+            epochs(1).attributes = containers.Map({'stimTime', 'tailTime', 'group'}, {500, 1000, 'G1'});
+            epochs(1).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
+
+            epochs(2) = entity.EpochData();
+            epochs(2).attributes = containers.Map({'stimTime', 'tailTime', 'group'}, {500, 2000, 'G1'});
+            epochs(2).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
+
+            mockedCellData = entity.CellData();
+            mockedCellData.attributes('recordingLabel') = obj.recordingLabel;
+            mockedCellData.epochs = epochs;
+            mockedCellData.deviceType = 'Amp1';
+
             % Tree with two level - analysis
-            tree = obj.testAnalyze(obj.simpleAnalysisProtocol, mockedCellData);
+            tree = obj.testAnalyze(structure, mockedCellData);
             actual = tree.treefun(@(node) node.name);
             
-            expected = {expectedRoot('test-analysis'); 'EpochGroup==LightStep_20'; 'deviceStream==Amplifier_Ch1'};
-            obj.verifyEqual(actual.Node, expected);
-            leaf = tree.findleaves();
-            obj.verifyEqual(tree.get(leaf).epochIndices, 1:50);
+            expectedRoot = @(id) strcat('analysis==', id, '-', obj.recordingLabel);
 
-            expectedParameters.deviceStream = mockedAmpParameters;
-            expectedParameters.stimTime = 20 * ones(1, 50);
-            obj.verifyEqual(tree.get(leaf).parameters, expectedParameters);
-            obj.verifyEqual(tree.get(tree.getparent(leaf)).parameters, expectedParameters);
+            expected = {expectedRoot('test-analysis'); 'group==G1'; 'stimTime==500'};
+            % validate branch name
+            obj.verifyEqual(actual.Node, expected);
+            
+            % validate epoch indices
+            leaf = tree.findleaves();
+            obj.verifyEqual(tree.get(leaf).epochIndices, [1, 2]);
+
+            % validate parameters
+            actualParentParemeters = tree.get(tree.getparent(leaf)).parameters;
+            obj.verifyEqual(actualParentParemeters.stimTime, [500, 500]);
+            obj.verifyEqual(actualParentParemeters.tailTime, [1000, 2000]);
+            obj.verifyEqual(actualParentParemeters.group, {'G1', 'G1'});
         end
         
         function testBuildTreeSimpleMultipleBranches(obj)
