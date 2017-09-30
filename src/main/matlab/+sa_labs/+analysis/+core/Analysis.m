@@ -62,6 +62,10 @@ classdef Analysis < handle
                 device = groups(1).splitValue;
             end
         end
+
+        function tf = isFeatureGroupSplitByDevice(obj, featureGroup)
+            tf = strcmpi(featureGroup.splitParameter, 'devices');
+        end
         
         function addFeaturesToGroup(obj, groups, functions)
             [map, order] = obj.getFeaureGroupsByProtocol();

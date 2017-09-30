@@ -115,6 +115,20 @@ classdef FeatureTreeBuilder < sa_labs.analysis.core.FeatureTreeFinder
                 any(arrayfun(@(id) strcmp(obj.getFeatureGroups(id).name, sourceGroup.name), ids))...
                 && obj.isBasicFeatureGroup(sourceGroup);
         end
+
+        function tf = didCollectParameters(obj, featureGroup)
+           t = obj.tree; 
+           parentId = t.getparent(featureGroup.id);
+           parentGroup = t.get(parentId);
+           tf = ~ parentGroup.parametersCopied;
+        end
+
+        function disableFurtherCollect(obj, featureGroup)
+            t = obj.tree; 
+            parentId = t.getparent(featureGroup.id);
+            parentGroup = t.get(parentId);
+            parentGroup.parametersCopied = true;
+        end
     end
     
     methods(Access = private)

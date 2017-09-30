@@ -16,9 +16,10 @@ classdef FeatureGroup < handle & matlab.mixin.CustomDisplay
         uuid
     end
     
-    properties
+    properties (Hidden)
         featureMap          % Feature map with key as FeatureDescription.type and value as @see Feature instance
         epochIndices        % List of epoch indices to be processed in Offline analysis. @see CellData and FeatureExtractor.extract
+        parametersCopied    % Avoid redundant collection of parameters
     end
     
     methods
@@ -33,6 +34,7 @@ classdef FeatureGroup < handle & matlab.mixin.CustomDisplay
             obj.splitParameter = splitParameter;
             obj.splitValue = splitValue;
             obj.uuid = char(java.util.UUID.randomUUID);
+            obj.parametersCopied = false;
         end
         
         function value = getParameter(obj, property)

@@ -25,6 +25,18 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
         function epochs = getEpochs(obj, featureGroup)
             epochs = obj.cellData.epochs(featureGroup.epochIndices);
         end
+
+        function devices = getDeviceForGroup(obj, group)
+            devices = getDeviceForGroup@sa_labs.analysis.core.Analysis(obj, group);
+            
+            if isempty(devices)
+                obj.log.debug('Split parameter [devices] not found, hence trying cell data specfic device type');
+                devices = obj.cellData.deviceType;
+                if isempty(devices)
+                    obj.log.error('Provide [devices] as split parameter (or) use amplifier specific cell data');
+                end
+            end
+        end 
     end
     
     methods (Access = protected)
@@ -76,13 +88,25 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
                 obj.log.warn('keyset is empty, cannot percolate up epoch parameters');
                 return
             end
-            obj.featureBuilder.collect([featureGroup.id], keySet, keySet);
-            obj.log.trace('collecting epoch parameters ...');
+
+            % validate parameters. It should percolate up only time when 'split
+            % parameter' is 'devices' although it has multiple split values
+            % Issue https://github.com/Schwartz-AlaLaurila-Labs/sa-labs-analysis-core/issues/5
+
+            if obj.featureBuilder.didCollectParameters(featureGroup)
+                
+                ids = [featureGroup.id];
+                obj.log.trace('collecting epoch parameters ...');
+                obj.featureBuilder.collect(ids, keySet, keySet);
+
+                obj.log.trace('collecting cell parameters ...');
+                cellKeySet = obj.cellData.getPropertyMap().keys;
+                obj.featureBuilder.collect([featureGroup.id], cellKeySet, cellKeySet);
+            end
             
-            obj.log.trace('collecting cell parameters ...');
-            cellKeySet = obj.cellData.getPropertyMap().keys;
-            obj.featureBuilder.collect([featureGroup.id], cellKeySet, cellKeySet);
-             
+            if obj.isFeatureGroupSplitByDevice(featureGroup)
+                obj.featureBuilder.disableFurtherCollect(featureGroup);
+            end
         end
     end
     

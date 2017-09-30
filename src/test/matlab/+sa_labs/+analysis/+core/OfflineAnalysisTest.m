@@ -20,8 +20,17 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
     methods(Test)
         
         function testBuildTreeSimpleTwoLevel(obj)
+           
+            % 'analysis==test-analysis-c1 ( 1 )  '
+            % '                                  '
+            % '                |                 '
+            % '         group==G1 ( 2 )          '
+            % '                                  '
+            % '                |                 '
+            % '       stimTime==500 ( 3 )        '
+            
             import sa_labs.analysis.*;
-
+            
             structure = struct();
             structure.type = 'test-analysis';
             structure.buildTreeBy = {'group', 'stimTime'};
@@ -29,26 +38,28 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             
             % Happy epoch and cell data !
             epochs = entity.EpochData.empty(0, 2);
-
+            
             epochs(1) = entity.EpochData();
             epochs(1).attributes = containers.Map({'stimTime', 'tailTime', 'group'}, {500, 1000, 'G1'});
             epochs(1).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
-
+            
             epochs(2) = entity.EpochData();
             epochs(2).attributes = containers.Map({'stimTime', 'tailTime', 'group'}, {500, 2000, 'G1'});
             epochs(2).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
-
+            
             mockedCellData = entity.CellData();
             mockedCellData.attributes('recordingLabel') = obj.recordingLabel;
             mockedCellData.epochs = epochs;
             mockedCellData.deviceType = 'Amp1';
-
+            
             % Tree with two level - analysis
             tree = obj.testAnalyze(structure, mockedCellData);
-            actual = tree.treefun(@(node) node.name);
+            disp('analysis tree')
+            tree.treefun(@(node) strcat(node.name, [' ( ' num2str(node.id), ' ) '])).tostring()
             
+            actual = tree.treefun(@(node) node.name);
             expectedRoot = @(id) strcat('analysis==', id, '-', obj.recordingLabel);
-
+            
             expected = {expectedRoot('test-analysis'); 'group==G1'; 'stimTime==500'};
             % validate branch name
             obj.verifyEqual(actual.Node, expected);
@@ -56,7 +67,7 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             % validate epoch indices
             leaf = tree.findleaves();
             obj.verifyEqual(tree.get(leaf).epochIndices, [1, 2]);
-
+            
             % validate parameters
             actualParentParemeters = tree.get(tree.getparent(leaf)).parameters;
             obj.verifyEqual(actualParentParemeters.stimTime, [500, 500]);
@@ -64,50 +75,58 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             obj.verifyEqual(actualParentParemeters.group, {'G1', 'G1'});
         end
         
-        function testBuildTreeSimpleMultipleBranches(obj)
+        function testBuildTreeSimpleMultipleBranchesAsAmps(obj)
+            
+            
+            %  '    analysis==test-analysis-c1 ( 1 )      '
+            %  '                                          '
+            %  '                    |                     '
+            %  '             group==G1 ( 2 )              '
+            %  '          +---------+----------+          '
+            %  '          |                    |          '
+            %  ' devices==Amp1 ( 3 )  devices==Amp2 ( 4 ) '
+            
             import sa_labs.analysis.*;
             expectedRoot = @(id) strcat('analysis==', id, '-', obj.recordingLabel);
             
-            % Tree with two level and one branch - analysis
-            % Tree with two level - analysis
-            levelOne = containers.Map({'LightStep_20', 'LightStep_500'}, {1 : 50, 51 : 100});
-            levelTwo = containers.Map({'Amplifier_Ch1'}, {1 : 50});
-            levelTwoOtherBranch = containers.Map({'Amplifier_Ch1'}, {51 : 100});
+            structure = struct();
+            structure.type = 'test-analysis';
+            structure.buildTreeBy = {'group', 'devices'};
+            structure.featureManager = 'sa_labs.analysis.core.FeatureTreeManager';
             
-            mockedCellData = Mock(entity.CellData());
-            mockedCellData.when.getEpochValuesMap(AnyArgs())...
-                .thenReturn(levelOne, 'EpochGroup')...
-                .thenReturn(levelTwo, 'deviceStream')...
-                .thenReturn(levelTwoOtherBranch, 'deviceStream');
+            epochs = entity.EpochData.empty(0, 2);
+            epochs(1) = entity.EpochData();
+            epochs(1).attributes = containers.Map({'stimTime', 'tailTime', 'group'}, {500, 1000, 'G1'});
+            epochs(1).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
             
-            mockedAmpParameters = cell(1, 50);
-            mockedAmpParameters(:) = {'Amplifier_Ch1'};
+            epochs(2) = entity.EpochData();
+            epochs(2).attributes = containers.Map({'stimTime', 'tailTime', 'group'}, {500, 2000, 'G1'});
+            epochs(2).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
             
-            mockedCellData.when.getParamValues(AnyArgs())...
-                .thenReturn({'deviceStream', 'stimTime'}, {mockedAmpParameters, 20 * ones(1, 50)})...
-                .thenReturn({'deviceStream', 'stimTime', 'tailTime'}, {mockedAmpParameters, 500 * ones(1, 50), []});
+            mockedCellData = entity.CellData();
+            mockedCellData.attributes('recordingLabel') = obj.recordingLabel;
+            mockedCellData.epochs = epochs;
             
-            mockedCellData.when.getEpochKeysetUnion(AnyArgs()).thenReturn({'deviceStream', 'stimTime'});
-            
-            tree = obj.testAnalyze(obj.simpleAnalysisProtocol, mockedCellData);
+            tree = obj.testAnalyze(structure, mockedCellData);
+            disp('analysis tree')
+            tree.treefun(@(node) strcat(node.name, [' ( ' num2str(node.id), ' ) '])).tostring()
             actual = tree.treefun(@(node) node.name);
             
-            expected = {expectedRoot('test-analysis'); 'EpochGroup==LightStep_20'; 'deviceStream==Amplifier_Ch1'; 'EpochGroup==LightStep_500'; 'deviceStream==Amplifier_Ch1'};
+            % validate tree structure
+            expected = {expectedRoot('test-analysis'); 'group==G1'; 'devices==Amp1'; 'devices==Amp2'};
             obj.verifyEqual(actual.Node, expected);
             leafs = tree.findleaves();
+            obj.verifyLength(leafs, 2);
             
             node1 = tree.get(leafs(1));
-            obj.verifyEqual(node1.epochIndices, 1:50);
-            expectedParameters.deviceStream = mockedAmpParameters;
-            expectedParameters.stimTime = 20 * ones(1, 50);
-            obj.verifyEqual(node1.parameters, expectedParameters);
+            obj.verifyEqual(node1.epochIndices, [1, 2]);
             
             node2 = tree.get(leafs(2));
-            obj.verifyEqual(node2.epochIndices, 51:100);
-            expectedParameters.deviceStream = mockedAmpParameters;
-            expectedParameters.stimTime = 500 * ones(1, 50);
-            expectedParameters.tailTime = [];
-            obj.verifyEqual(node2.parameters, expectedParameters);
+            obj.verifyEqual(node2.epochIndices, [1, 2]);
+            actualParentParemeters = tree.get(tree.getparent(leafs(1))).parameters;
+            obj.verifyEqual(actualParentParemeters.stimTime, [500, 500]);
+            obj.verifyEqual(actualParentParemeters.tailTime, [1000, 2000]);
+            obj.verifyEqual(actualParentParemeters.group, {'G1', 'G1'});
         end
         
         function  testBuildTreeMutlipleLevelMultipleBranches(obj)
@@ -152,8 +171,7 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             expected.deviceStream = {'Amplifier_Ch1', 'Amplifier_Ch2'};
             % tree will have all the epoch parameters in the same epoch
             % order
-            % exception - if there is no variation it just gets the unique
-            % parameter
+
             expected.ndfs = {'A1A', 'A2A', 'A3A', 'B1A', 'A2A', 'A3A'};
             
             actualParameters = tree.get(tree.getparent(leafs(1))).parameters;
