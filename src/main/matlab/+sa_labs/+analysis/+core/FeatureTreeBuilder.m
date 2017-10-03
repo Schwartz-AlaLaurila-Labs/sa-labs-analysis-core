@@ -50,7 +50,7 @@ classdef FeatureTreeBuilder < sa_labs.analysis.core.FeatureTreeFinder
                 group = obj.getFeatureGroups(id);
                 parent = obj.getFeatureGroups(1);
                 obj.log.debug([' analysis parameter from [ ' group.name ' ] is pushed to [ ' parent.name ' ]'])
-                parent.setParameters(group.parameters);
+                parent.setParameters(group.attributes);
             end
         end
         

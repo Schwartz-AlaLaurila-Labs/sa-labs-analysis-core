@@ -55,7 +55,7 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
             amp1Lightstep = amp1LightstepsNodes(1);
             obj.builder.collect([childNodes(:).id], 'splitValue', 'rstar_from_child')
             
-            obj.verifyEqual(amp1Lightstep.getParameter('rstar_from_child'), {'0.01', '0.1'});
+            obj.verifyEqual(amp1Lightstep.get('rstar_from_child'), {'0.01', '0.1'});
             handle = @()obj.builder.collect([childNodes(:).id], 'splitValue', 'splitValue');
             obj.verifyError(handle,'MATLAB:class:SetProhibited');
         end

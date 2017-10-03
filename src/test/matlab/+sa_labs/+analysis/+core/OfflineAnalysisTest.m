@@ -69,7 +69,7 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             obj.verifyEqual(tree.get(leaf).epochIndices, [1, 2]);
             
             % validate parameters
-            actualParentParemeters = tree.get(tree.getparent(leaf)).parameters;
+            actualParentParemeters = tree.get(tree.getparent(leaf)).toStructure();
             obj.verifyEqual(actualParentParemeters.stimTime, [500, 500]);
             obj.verifyEqual(actualParentParemeters.tailTime, [1000, 2000]);
             obj.verifyEqual(actualParentParemeters.group, {'G1', 'G1'});
@@ -123,7 +123,7 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             
             node2 = tree.get(leafs(2));
             obj.verifyEqual(node2.epochIndices, [1, 2]);
-            actualParentParemeters = tree.get(tree.getparent(leafs(1))).parameters;
+            actualParentParemeters = tree.get(tree.getparent(leafs(1))).toStructure();
             obj.verifyEqual(actualParentParemeters.stimTime, [500, 500]);
             obj.verifyEqual(actualParentParemeters.tailTime, [1000, 2000]);
             obj.verifyEqual(actualParentParemeters.group, {'G1', 'G1'});
@@ -174,9 +174,9 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
 
             expected.ndfs = {'A1A', 'A2A', 'A3A', 'B1A', 'A2A', 'A3A'};
             
-            actualParameters = tree.get(tree.getparent(leafs(1))).parameters;
+            actualParameters = tree.get(tree.getparent(leafs(1))).toStructure();
             obj.verifyEqual(actualParameters, expected);
-            actualParameters = tree.get(tree.getparent(leafs(2))).parameters;
+            actualParameters = tree.get(tree.getparent(leafs(2))).toStructure();
             obj.verifyEqual(actualParameters, expected);
             
             expected.stimTime = [500, 500];
@@ -186,7 +186,7 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             % exception - if there is no variation it just gets the unique
             % parameter
             expected.ndfs = {'Empty', 'A2A', 'A3A', 'A1A', 'A2A', 'A3A'};
-            actualParameters = tree.get(tree.getparent(leafs(4))).parameters;
+            actualParameters = tree.get(tree.getparent(leafs(4))).toStructure();
             obj.verifyEqual(actualParameters, expected);
         end
         
