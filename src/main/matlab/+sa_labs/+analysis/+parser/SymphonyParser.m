@@ -55,7 +55,7 @@ classdef SymphonyParser < handle
             import sa_labs.analysis.*;
             
             for device = each(unique(cellData.getEpochValues('devices')))
-                if contains(lower(device), 'amp')
+                if strfind(lower(device), 'amp')
                     cell = entity.CellData();
                     cell.attributes = containers.Map(cellData.attributes.keys, cellData.attributes.values);
                     cell.epochs = cellData.epochs;
