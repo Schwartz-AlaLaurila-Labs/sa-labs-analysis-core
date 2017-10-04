@@ -51,11 +51,15 @@ classdef EpochDataTest < matlab.unittest.TestCase
         	epochData = EpochData();
         	epochData.dataLinks = containers.Map({'Amp1', 'Amp2' }, {'response1', 'response2'});
         	epochData.responseHandle = @(arg)strcat(arg, '-data');
+            epochData.parentCell = CellData();
 
         	% test for epoch data specific behaviour
         	obj.verifyEqual(epochData.get('devices'), epochData.dataLinks.keys);
         	obj.verifyEqual(epochData.getResponse('Amp1'), 'response1-data');
         	obj.verifyError(@() epochData.getResponse('unknown'), 'device:notfound');
+            
+            epochData.parentCell.deviceType = 'Amp1';
+            obj.verifyEqual(epochData.get('devices'), 'Amp1');
         end
 
         function testDerivedResponse(obj)

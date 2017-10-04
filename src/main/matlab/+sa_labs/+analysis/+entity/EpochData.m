@@ -20,9 +20,13 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
         
         function v = get(obj, key)
             v = get@sa_labs.analysis.entity.KeyValueEntity(obj, key);
-            
-            if isempty(v) && strcmpi(key, 'devices')
-                v = obj.dataLinks.keys;
+
+            if isempty(v) && strcmpi(key, 'devices') 
+                v = obj.getDefaultDeviceType();
+                
+                if isempty(v)
+                    v = obj.dataLinks.keys;
+                end
             elseif isempty(v)
                 [~, v] = obj.getParameters(key);
             end
@@ -60,7 +64,7 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
             % definition
 
             if nargin < 2
-                device = obj.parentCell.deviceType;
+                device = obj.getDefaultDeviceType();
             end            
             obj.validateDevice(device);
 
@@ -70,7 +74,7 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
 
         function addDerivedResponse(obj, key, data, device)
             if nargin < 4
-                device = obj.parentCell.deviceType;
+                device = obj.getDefaultDeviceType();
             end
             obj.validateDevice(device);
             
@@ -81,7 +85,7 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
         function r = getDerivedResponse(obj, key, device)
             
             if nargin < 3
-                device = obj.parentCell.deviceType;
+                device = obj.getDefaultDeviceType();
             end
             obj.validateDevice(device);
 
@@ -117,6 +121,13 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
                 message = ['device name [ ' device ' ] not found in the h5 response. Available device [' char(devices) ']'];
                 error('device:notfound', message);
             end
-        end     
+        end
+
+        function deviceType = getDefaultDeviceType(obj)
+            deviceType = [];
+            if ~ isempty(obj.parentCell) && isempty(obj.parentCell.deviceType)
+                deviceType = obj.parentCell.deviceType;
+            end
+        end      
     end 
 end
