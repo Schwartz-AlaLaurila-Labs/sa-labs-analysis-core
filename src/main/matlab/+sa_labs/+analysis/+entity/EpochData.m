@@ -28,56 +28,6 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
             end
         end
 
-        function addDerivedResponse(obj, key, data, device)
-            if nargin < 4
-                device = obj.parentCell.deviceType;
-            end
-            obj.validateDevice(device);
-            
-            id = strcat(device, '_', key);
-            obj.derivedAttributes(id) = data;
-        end
-        
-        function r = getResponse(obj, device)
-            
-            % getResponse - finds the device response by executing call back
-            % 'responseHandle(path)'
-            % path - is obtained from dataLinks by matching it with given
-            % device @ see symphony2parser.parse() method for responseHandle
-            % definition
-
-            if nargin < 2
-                device = obj.parentCell.deviceType;
-            end            
-            obj.validateDevice(device);
-
-            path = obj.dataLinks(device);
-            r = obj.responseHandle(path);
-        end
-
-        function validateDevice(obj, device)
-            
-            if ~ isKey(obj.dataLinks, device)
-                devices = strjoin(cellstr(obj.dataLinks.keys));
-                message = ['device name [ ' device ' ] not found in the h5 response. Available device [' char(devices) ']'];
-                error('device:notfound', message);
-            end
-        end 
-
-        function r = getDerivedResponse(obj, key, device)
-            
-            if nargin < 3
-                device = obj.parentCell.deviceType;
-            end
-            obj.validateDevice(device);
-
-            r = [];
-            id = strcat(device, '_', key);
-            if isKey(obj.derivedAttributes, id)
-               r = obj.derivedAttributes(id);
-            end 
-        end
-        
         function [keys, values] = getParameters(obj, pattern)
             % keys - Returns the matched parameter for given
             % search string
@@ -100,6 +50,47 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
                 values = [values, parentValues];
             end
         end
+        
+        function r = getResponse(obj, device)
+            
+            % getResponse - finds the device response by executing call back
+            % 'responseHandle(path)'
+            % path - is obtained from dataLinks by matching it with given
+            % device @ see symphony2parser.parse() method for responseHandle
+            % definition
+
+            if nargin < 2
+                device = obj.parentCell.deviceType;
+            end            
+            obj.validateDevice(device);
+
+            path = obj.dataLinks(device);
+            r = obj.responseHandle(path);
+        end
+
+        function addDerivedResponse(obj, key, data, device)
+            if nargin < 4
+                device = obj.parentCell.deviceType;
+            end
+            obj.validateDevice(device);
+            
+            id = strcat(device, '_', key);
+            obj.derivedAttributes(id) = data;
+        end
+
+        function r = getDerivedResponse(obj, key, device)
+            
+            if nargin < 3
+                device = obj.parentCell.deviceType;
+            end
+            obj.validateDevice(device);
+
+            r = [];
+            id = strcat(device, '_', key);
+            if isKey(obj.derivedAttributes, id)
+               r = obj.derivedAttributes(id);
+            end 
+        end
     end
     
     methods(Access = protected)
@@ -116,4 +107,16 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
             end
         end      
     end
+
+    methods (Access = private)
+        
+        function validateDevice(obj, device)
+            
+            if ~ isKey(obj.dataLinks, device)
+                devices = strjoin(cellstr(obj.dataLinks.keys));
+                message = ['device name [ ' device ' ] not found in the h5 response. Available device [' char(devices) ']'];
+                error('device:notfound', message);
+            end
+        end     
+    end 
 end
