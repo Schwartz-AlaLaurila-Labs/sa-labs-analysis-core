@@ -64,7 +64,14 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
             if ~ exist(dir, 'dir')
                 mkdir(dir);
             end
-            save([dir cellData.recordingLabel], 'cellData');
+            
+            if isa(cellData, 'sa_labs.analysis.entity.CellDataByAmp')
+                CellDataByAmp = cellData;
+                path = [dir CellDataByAmp.recordingLabel];
+            else
+                path = [dir cellData.recordingLabel];
+            end
+            save(path, 'cellData');
         end
         
         function names = findCellNames(obj, pattern)
@@ -86,9 +93,16 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
         end
         
         function cellData = findCell(obj, cellName)
-            path = [obj.repository.analysisFolder filesep 'cellData' filesep cellName '.mat'];
-            result = load(path);
+            pathFun = @(cellName) [obj.repository.analysisFolder filesep 'cellData' filesep cellName '.mat'];
+            result = load(pathFun(cellName));
             cellData = result.cellData;
+
+            if isa(cellData, 'sa_labs.analysis.entity.CellDataByAmp')
+                cellDataByAmp = cellData;
+                result = load(pathFun(cellDataByAmp.recordingLabel));
+                cellData = result.cellData;
+                cellDataByAmp.updateCellDataForTransientProperties(cellData);
+            end
         end
         
         function saveAnalysisResults(obj, resultId, result, protocol)

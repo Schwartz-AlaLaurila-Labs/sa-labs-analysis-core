@@ -101,11 +101,15 @@ classdef ParserTest < matlab.unittest.TestCase
             ref.parse();
             validate('Amp1', 2);
             cellData = ref.getResult();
-            obj.verifyEqual(cellData(1).deviceType, 'Amp1');
-            obj.verifyEmpty(cellData(2).deviceType);
+            obj.verifyEmpty(cellData{2}.deviceType);
+            obj.verifyEqual(cellData{2}.recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V2_FILE, 'c'));
             
-            obj.verifyEqual(cellData(1).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V2_FILE, 'c', 'Amp1'));
-            obj.verifyEqual(cellData(2).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V2_FILE, 'c'));
+            obj.verifyTrue(isa(cellData{1}, 'sa_labs.analysis.entity.CellDataByAmp'));
+            cellDataByAmp = cellData{1};
+            obj.verifyEqual(cellDataByAmp.deviceType, 'Amp1');
+            cellDataByAmp.updateCellDataForTransientProperties(cellData{2});
+            
+            obj.verifyEqual(cellData{2}.recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V2_FILE, 'c', 'Amp1'));
             
             % Parse symphony_v1 file and validate
             fname = [obj.path obj.SYMPHONY_V1_FILE];
@@ -113,19 +117,28 @@ classdef ParserTest < matlab.unittest.TestCase
             ref.parse();
             validate('Amplifier_Ch1', 3);
             cellData = ref.getResult();
-            obj.verifyEqual(cellData(1).deviceType, 'Amplifier_Ch1');
-            obj.verifyEqual(cellData(2).deviceType, 'Amplifier_Ch2');
-            obj.verifyEmpty(cellData(3).deviceType);
-            obj.verifyEqual(cellData(1).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V1_FILE, '', 'Amplifier_Ch1'));
-            obj.verifyEqual(cellData(2).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V1_FILE, '', 'Amplifier_Ch2'));
-            obj.verifyEqual(cellData(3).recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V1_FILE, ''))
+            obj.verifyEmpty(cellData{3}.deviceType);
+            obj.verifyEqual(cellData{3}.recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V1_FILE, ''))
+             
+            obj.verifyTrue(isa(cellData{1}, 'sa_labs.analysis.entity.CellDataByAmp'));
+            cellDataByAmp = cellData{1};
+            obj.verifyEqual(cellDataByAmp.deviceType, 'Amplifier_Ch1');
+            cellDataByAmp.updateCellDataForTransientProperties(cellData{3});
+            obj.verifyEqual(cellData{3}.recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V1_FILE, '', 'Amplifier_Ch1'));
+            
+            obj.verifyTrue(isa(cellData{2}, 'sa_labs.analysis.entity.CellDataByAmp'));
+            cellDataByAmp = cellData{2};
+            obj.verifyEqual(cellDataByAmp.deviceType, 'Amplifier_Ch2');         
+            cellDataByAmp.updateCellDataForTransientProperties(cellData{3});
+            obj.verifyEqual(cellData{3}.recordingLabel, getExpectedRecordingLabel(obj.SYMPHONY_V1_FILE, '', 'Amplifier_Ch2'));
+           
             
             function validate(amplifier, expectedSize)
                 
                 cellData = ref.getResult();
                 obj.verifyLength(cellData, expectedSize);
                 
-                cellData = cellData(1) %#ok
+                cellData = cellData{expectedSize} %#ok
                 epochs = cellData.epochs;
                 previousEpochTime = -1;
                 

@@ -18,6 +18,10 @@ classdef FileRepository < appbox.Settings & mdepin.Bean
             if ~ exist(obj.analysisFolder, 'dir')
                 mkdir(obj.analysisFolder)
             end
+            logDir = [obj.analysisFolder filesep '.logs'];
+            if ~ exist(logDir, 'dir')
+                mkdir(logDir);
+            end
             if ~ exist(obj.rawDataFolder, 'dir')
                 mkdir(obj.rawDataFolder)
             end
@@ -81,7 +85,7 @@ classdef FileRepository < appbox.Settings & mdepin.Bean
         end
 
         function f = get.logFile(obj)
-             f = obj.get('logFile', fullfile(obj.analysisFolder, [char(date) '-analysis.log']));
+             f = obj.get('logFile', fullfile(obj.analysisFolder, '.logs', [char(date) '-analysis.log']));
         end
 
         function set.logFile(obj, f)

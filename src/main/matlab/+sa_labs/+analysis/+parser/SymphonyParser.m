@@ -3,7 +3,7 @@ classdef SymphonyParser < handle
     properties (Access = protected)
         fname
         info
-        cellDataArray
+        cellDataList
     end
     
     properties (Transient)
@@ -16,7 +16,7 @@ classdef SymphonyParser < handle
             import sa_labs.analysis.*;
             
             obj.log = logging.getLogger(sa_labs.analysis.app.Constants.ANALYSIS_LOGGER);
-            obj.cellDataArray = entity.CellData.empty(0, 0);
+            obj.cellDataList = {};
             obj.fname = fname;
             
             tic;
@@ -57,20 +57,11 @@ classdef SymphonyParser < handle
             
             for device = each(unique(cellData.getEpochValues('devices')))
                 if strfind(lower(device), 'amp')
-                    cell = entity.CellData();
-                    cell.attributes = containers.Map(cellData.attributes.keys, cellData.attributes.values);
-                    cell.epochs = cellData.epochs;
-                    
-                    recordingLabel = '';
-                    if isKey(cellData.attributes, 'recordingLabel')
-                        recordingLabel = cellData.attributes('recordingLabel');
-                    end
-                    cell.attributes('recordingLabel') =  strcat(recordingLabel, '_', device);
-                    cell.deviceType = device;
-                    obj.cellDataArray(end + 1) = cell;
+                    cell = entity.CellDataByAmp(cellData.recordingLabel, device);
+                    obj.cellDataList{end + 1} = cell;
                 end
             end
-            obj.cellDataArray(end + 1) = cellData;
+            obj.cellDataList{end + 1} = cellData;
         end
         
         function hrn = convertDisplayName(~, n)
@@ -86,7 +77,7 @@ classdef SymphonyParser < handle
         end
         
         function r = getResult(obj)
-            r = obj.cellDataArray;
+            r = obj.cellDataList;
         end
         
         function info = invokeH5Info(obj)

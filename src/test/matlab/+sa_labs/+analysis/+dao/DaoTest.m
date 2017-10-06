@@ -71,6 +71,16 @@ classdef DaoTest < matlab.unittest.TestCase
                 name = obj.cellNames{i};
                 obj.verifyEqual(exist([path name '.mat'], 'file'), 2);
             end
+            
+            % Test for cellDataByAmp
+            import sa_labs.analysis.*;
+            cellData = entity.CellData();
+            cellData.recordingLabel = 'cluster-c1';
+            cellDataByAmp = entity.CellDataByAmp(cellData.recordingLabel, 'Amp1');
+            dao.saveCell(cellData);
+            dao.saveCell(cellDataByAmp);
+            obj.verifyEqual(exist([path 'cluster-c1.mat'], 'file'), 2);
+            obj.verifyEqual(exist([path 'cluster-c1_Amp1.mat'], 'file'), 2);
         end
         
         function testSaveProject(obj)
@@ -159,6 +169,13 @@ classdef DaoTest < matlab.unittest.TestCase
             
             dataHandle = @()dao.findCell('unknown');
             obj.verifyError(dataHandle, 'MATLAB:load:couldNotReadFile');
+            
+            % Test for CellDataByAmp @see testSaveCell for more details
+            cellData1 = dao.findCell('cluster-c1_Amp1');
+            cellData2 = dao.findCell('cluster-c1');
+            obj.verifyEqual(cellData1.deviceType, 'Amp1');
+            obj.verifyEmpty(cellData2.deviceType);
+            obj.verifyNotEqual(cellData1, cellData2);
         end
 
         function testSaveAnalysisResults(obj)

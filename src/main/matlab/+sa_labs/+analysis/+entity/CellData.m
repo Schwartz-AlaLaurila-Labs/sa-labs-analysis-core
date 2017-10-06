@@ -2,13 +2,16 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
     
     properties
         epochs
-        deviceType
     end
     
     properties (Dependent)
         experimentDate
         h5File
         recordingLabel
+    end
+
+    properties (Transient)
+        deviceType
     end
     
     methods
@@ -220,6 +223,9 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
         
         function label = get.recordingLabel(obj)
             label = strcat(obj.h5File, obj.get('recordingLabel'));
+            if ~ isempty(obj.deviceType)
+                label = strcat(label, '_', obj.deviceType);
+            end 
         end            
     end
     
