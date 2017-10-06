@@ -26,6 +26,13 @@ classdef FeatureGroup < sa_labs.analysis.entity.AbstractGroup
             obj.splitValue = splitValue;
             obj.parametersCopied = false;
         end
+
+        function p = getParameter(obj, key)
+            p = unique(obj.get(key));
+            if numel(p) > 1
+                warning([ key ' has more than one unique value for group']);
+            end
+        end
     end
 
     methods (Access = protected)

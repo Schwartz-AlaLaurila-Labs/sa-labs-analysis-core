@@ -19,7 +19,7 @@ classdef Feature < handle & matlab.mixin.Heterogeneous
     
     methods
         
-        function obj = Feature(desc,dataHandler)
+        function obj = Feature(desc, dataHandler)
             if nargin < 2
                 dataHandler = [];
             end
@@ -68,6 +68,9 @@ classdef Feature < handle & matlab.mixin.Heterogeneous
     methods (Access = private)
         
         function data = formatData(obj, data)
+            if ischar(data)
+                data = cellstr(data);
+            end
             data = obj.columnMajor(data);
 
             factor = obj.description.downSampleFactor;

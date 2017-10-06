@@ -18,8 +18,9 @@ classdef SymphonyParser < handle
             obj.log = logging.getLogger(sa_labs.analysis.app.Constants.ANALYSIS_LOGGER);
             obj.cellDataArray = entity.CellData.empty(0, 0);
             obj.fname = fname;
+            
             tic;
-            obj.info = h5info(fname);
+            obj.info = obj.invokeH5Info();
             elapsedTime = toc;
             [~, name, ~] = fileparts(fname);
             obj.log.debug(['Elapsed Time for genearting info index for file [ ' name ' ] is [ ' num2str(elapsedTime) ' s ]' ]);
@@ -86,6 +87,10 @@ classdef SymphonyParser < handle
         
         function r = getResult(obj)
             r = obj.cellDataArray;
+        end
+        
+        function info = invokeH5Info(obj)
+            info = h5info(obj.fname);
         end
     end
     

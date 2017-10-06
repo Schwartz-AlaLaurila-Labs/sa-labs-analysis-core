@@ -19,6 +19,11 @@ classdef SymphonyV1Parser < sa_labs.analysis.parser.SymphonyParser
             obj = obj@sa_labs.analysis.parser.SymphonyParser(fname);
         end
         
+        function info = invokeH5Info(obj)
+            info = hdf5info(obj.fname, 'ReadAttributes', false);
+            info = info.GroupHierarchy(1);
+        end
+        
         function obj = parse(obj)
             import sa_labs.analysis.*;
             
@@ -64,7 +69,8 @@ classdef SymphonyV1Parser < sa_labs.analysis.parser.SymphonyParser
                 epoch.parentCell = data;
                 epoch.attributes = obj.mapAttributes(EpochDataGroups(groupInd).Groups(1), epoch.attributes);
                 epoch.dataLinks = obj.addDataLinks(EpochDataGroups(groupInd).Groups(2).Groups);
-                epoch.responseHandle = @(path) h5read(obj.fname, path);
+                fname = obj.fname;
+                epoch.responseHandle = @(path) h5read(fname, path);
                 data.epochs(i) = epoch;
             end
             data.attributes('Nepochs') = nEpochs;
