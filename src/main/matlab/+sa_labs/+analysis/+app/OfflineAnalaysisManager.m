@@ -215,14 +215,24 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             ip = inputParser();
             ip.addParameter('analysisType', '', @ischar);
             ip.addParameter('cellData', '', @ischar);
+            ip.addParameter('pattern', true, @islogical);
             ip.parse(varargin{:});
             
             analysisType = ip.Results.analysisType;
             cellData = ip.Results.cellData;
             
             project = obj.initializeProject(name);
-            
-            condn = ['(.*' strtrim(analysisType) '.*' strtrim(cellData) '.*)'];
+            if ip.Results.pattern
+                condn = ['(.*' strtrim(analysisType) '.*' strtrim(cellData) '.*)'];
+            else
+                if isempty(analysisType)
+                    condn = strcat('.*' , '-', cellData, '$');
+                elseif isempty(cellData)
+                    condn = strcat('^', analysisType, '-',  '.*');
+                else
+                    condn = strcat('^', analysisType, '-',  cellData, '$');
+                end
+            end
             
             obj.log.debug(['Applying filter [ ' condn ' ]' ]);
             indices = ~ cellfun(@isempty, regexpi(project.analysisResultIdList, condn));
