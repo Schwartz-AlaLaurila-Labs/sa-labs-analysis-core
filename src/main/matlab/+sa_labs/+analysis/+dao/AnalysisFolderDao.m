@@ -99,7 +99,7 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
 
             if isa(cellData, 'sa_labs.analysis.entity.CellDataByAmp')
                 cellDataByAmp = cellData;
-                result = load(pathFun(cellDataByAmp.recordingLabel));
+                result = load(pathFun(cellDataByAmp.cellDataRecordingLabel));
                 cellData = result.cellData;
                 cellDataByAmp.updateCellDataForTransientProperties(cellData);
             end

@@ -3,6 +3,7 @@ classdef CellDataByAmp < handle
     properties
         deviceType
         recordingLabel
+        cellDataRecordingLabel
     end
     
     methods
@@ -10,6 +11,7 @@ classdef CellDataByAmp < handle
         function obj = CellDataByAmp(recordingLabel, deviceType)
             obj.deviceType = deviceType;
             obj.recordingLabel = strcat(recordingLabel, '_', deviceType);
+            obj.cellDataRecordingLabel = recordingLabel;
         end
         
         function updateCellDataForTransientProperties(obj, cellData)

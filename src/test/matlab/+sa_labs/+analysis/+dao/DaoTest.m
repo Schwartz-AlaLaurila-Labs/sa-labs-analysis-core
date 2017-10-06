@@ -175,6 +175,8 @@ classdef DaoTest < matlab.unittest.TestCase
             cellData2 = dao.findCell('cluster-c1');
             obj.verifyEqual(cellData1.deviceType, 'Amp1');
             obj.verifyEmpty(cellData2.deviceType);
+            obj.verifyTrue(isa(cellData1, 'sa_labs.analysis.entity.CellData'));
+            obj.verifyTrue(isa(cellData2, 'sa_labs.analysis.entity.CellData'));
             obj.verifyNotEqual(cellData1, cellData2);
         end
 
