@@ -2,8 +2,7 @@ classdef FeatureGroup < sa_labs.analysis.entity.Group
     
     properties
         id                  % Identifier of the featureGroup, assigned by NodeManager @see NodeManager.addFeatureGroup
-        epochGroup          % Read only dataSet and used as cache
-        device
+        device              % Amplifier channel name Eg 'Amp1'
     end
     
     properties(SetAccess = immutable)

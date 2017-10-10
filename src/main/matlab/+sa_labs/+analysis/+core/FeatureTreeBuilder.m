@@ -54,15 +54,11 @@ classdef FeatureTreeBuilder < sa_labs.analysis.core.FeatureTreeFinder
             end
         end
         
-        function [id, featureGroup] = addFeatureGroup(obj, id, splitParameter, spiltValue, epochGroup)
+        function [id, featureGroup] = addFeatureGroup(obj, id, splitParameter, spiltValue, epochIndices)
             
             import sa_labs.analysis.*;
             featureGroup = entity.FeatureGroup(splitParameter, spiltValue);
-            
-            if ~ isempty(epochGroup)
-                featureGroup.epochGroup = epochGroup;
-                featureGroup.epochIndices = epochGroup.epochIndices;
-            end
+            featureGroup.epochIndices = epochIndices;
             id = obj.addfeatureGroup(id, featureGroup);
             featureGroup.id = id;
             obj.log.trace(['feature group [ ' featureGroup.name ' ] is added at the id [ ' num2str(id) ' ]'])

@@ -141,11 +141,8 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
                     obj.log.debug(['no epoch found for [ ' filter ' ]' ]);
                     continue
                 end
-                
-                epochGroup = sa_labs.analysis.entity.EpochGroup(epochIndices, filter, splitValue, obj.cellData.epochs(epochIndices));
-                if ~ isempty(epochGroup)
-                    [id, featureGroup] = obj.featureBuilder.addFeatureGroup(parentId, splitBy, splitValue, epochGroup);
-                end
+
+                [id, featureGroup] = obj.featureBuilder.addFeatureGroup(parentId, splitBy, splitValue, epochIndices);
                 
                 if length(params) > 1
                     obj.add(id, epochGroup, params(2 : end));

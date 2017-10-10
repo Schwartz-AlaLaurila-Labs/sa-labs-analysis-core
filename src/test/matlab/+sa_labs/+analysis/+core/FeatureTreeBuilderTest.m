@@ -13,22 +13,22 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
             obj.treeIndices = struct();
             obj.builder = core.FeatureTreeBuilder('analysis', 'Light-step-analysis');
             
-            obj.treeIndices.amp1 = obj.builder.addFeatureGroup(1, 'Amp', 'Amplifier_ch1', entity.EpochGroup(1:500, 'none'));
-            obj.treeIndices.amp2 = obj.builder.addFeatureGroup(1, 'Amp', 'Amplifier_ch2', entity.EpochGroup(1:500, 'none'));
+            obj.treeIndices.amp1 = obj.builder.addFeatureGroup(1, 'Amp', 'Amplifier_ch1', 1:500);
+            obj.treeIndices.amp2 = obj.builder.addFeatureGroup(1, 'Amp', 'Amplifier_ch2', 1:500);
             
-            obj.treeIndices.ds1 = obj.builder.addFeatureGroup(obj.treeIndices.amp1, 'EpochGroup', 'Light_Step_20', entity.EpochGroup(1:250, 'Light_Step_20'));
-            obj.treeIndices.ds2 = obj.builder.addFeatureGroup(obj.treeIndices.amp1, 'EpochGroup', 'Light_Step_400', entity.EpochGroup(251:500, 'Light_Step_400'));
-            obj.treeIndices.ds3 = obj.builder.addFeatureGroup(obj.treeIndices.amp2, 'EpochGroup', 'Light_Step_20', entity.EpochGroup(1:250, 'Light_Step_20'));
-            obj.treeIndices.ds4 = obj.builder.addFeatureGroup(obj.treeIndices.amp2, 'EpochGroup', 'Light_Step_400', entity.EpochGroup(251:500, 'Light_Step_400'));
+            obj.treeIndices.ds1 = obj.builder.addFeatureGroup(obj.treeIndices.amp1, 'EpochGroup', 'Light_Step_20', 1:250);
+            obj.treeIndices.ds2 = obj.builder.addFeatureGroup(obj.treeIndices.amp1, 'EpochGroup', 'Light_Step_400', 251:500);
+            obj.treeIndices.ds3 = obj.builder.addFeatureGroup(obj.treeIndices.amp2, 'EpochGroup', 'Light_Step_20', 1:250);
+            obj.treeIndices.ds4 = obj.builder.addFeatureGroup(obj.treeIndices.amp2, 'EpochGroup', 'Light_Step_400', 251:500);
             
-            obj.treeIndices.ds1_rstar_0_01 = obj.builder.addFeatureGroup(obj.treeIndices.ds1, 'rstar', '0.01',  entity.EpochGroup(1:2:250, 'rstar'));
-            obj.treeIndices.ds1_rstar_0_1 = obj.builder.addFeatureGroup(obj.treeIndices.ds1, 'rstar', '0.1',  entity.EpochGroup(2:2:250, 'rstar'));
-            obj.treeIndices.ds2_rstar_0_01 = obj.builder.addFeatureGroup(obj.treeIndices.ds2, 'rstar', '0.01', entity.EpochGroup(1:2:250, 'rstar'));
-            obj.treeIndices.ds2_rstar_0_1 = obj.builder.addFeatureGroup(obj.treeIndices.ds2, 'rstar', '0.1',  entity.EpochGroup(2:2:250, 'rstar'));
-            obj.treeIndices.ds3_rstar_0_01 = obj.builder.addFeatureGroup(obj.treeIndices.ds3, 'rstar', '0.01', entity.EpochGroup(1:2:250, 'rstar'));
-            obj.treeIndices.ds3_rstar_0_1 = obj.builder.addFeatureGroup(obj.treeIndices.ds3, 'rstar', '0.1',  entity.EpochGroup(2:2:250, 'rstar'));
-            obj.treeIndices.ds4_rstar_0_01 = obj.builder.addFeatureGroup(obj.treeIndices.ds4, 'rstar', '0.01', entity.EpochGroup(1:2:250, 'rstar'));
-            obj.treeIndices.ds4_rstar_0_1 = obj.builder.addFeatureGroup(obj.treeIndices.ds4, 'rstar', '0.1',  entity.EpochGroup(2:2:250, 'rstar'));
+            obj.treeIndices.ds1_rstar_0_01 = obj.builder.addFeatureGroup(obj.treeIndices.ds1, 'rstar', '0.01', 1:2:250);
+            obj.treeIndices.ds1_rstar_0_1 = obj.builder.addFeatureGroup(obj.treeIndices.ds1, 'rstar', '0.1', 2:2:250);
+            obj.treeIndices.ds2_rstar_0_01 = obj.builder.addFeatureGroup(obj.treeIndices.ds2, 'rstar', '0.01', 1:2:250);
+            obj.treeIndices.ds2_rstar_0_1 = obj.builder.addFeatureGroup(obj.treeIndices.ds2, 'rstar', '0.1', 2:2:250);
+            obj.treeIndices.ds3_rstar_0_01 = obj.builder.addFeatureGroup(obj.treeIndices.ds3, 'rstar', '0.01', 1:2:250);
+            obj.treeIndices.ds3_rstar_0_1 = obj.builder.addFeatureGroup(obj.treeIndices.ds3, 'rstar', '0.1', 2:2:250);
+            obj.treeIndices.ds4_rstar_0_01 = obj.builder.addFeatureGroup(obj.treeIndices.ds4, 'rstar', '0.01', 1:2:250);
+            obj.treeIndices.ds4_rstar_0_1 = obj.builder.addFeatureGroup(obj.treeIndices.ds4, 'rstar', '0.1', 2:2:250);
             
             disp('Tree information - ');
             obj.builder.getStructure().tostring() % print tree
