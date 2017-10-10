@@ -44,7 +44,7 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
         
             for epoch = each(epochs)
                 path = epoch.dataLinks(obj.device);
-                key = obj.makeValidKey(strcat(obj.device, Constants.EPOCH_KEY_SUFFIX));
+                key = obj.makeValidKey(Constants.EPOCH_KEY_SUFFIX);
                 obj.createFeature(key, @() getfield(epoch.responseHandle(path), 'quantity'), 'append', true);
 
                 for derivedResponseKey = each(epoch.derivedAttributes.keys)
@@ -69,12 +69,18 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
                 end
                 data = obj.getData([features{:}]);
             end
-            
-
         end
 
         function tf = hasDevice(obj, key)
-            tf = strfind(upper(key), upper(obj.device));
+            tf = any(strfind(upper(key), upper(obj.device)));
+        end
+
+        function key = makeValidKey(obj, key)
+            key = makeValidKey@sa_labs.analysis.entity.Group(obj, key);
+            
+            if ~ obj.hasDevice(key)
+                key = upper(strcat(obj.device, '_', key));
+            end
         end
     end
 end

@@ -28,11 +28,11 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
                     v = obj.dataLinks.keys;
                 end
             elseif isempty(v)
-                [~, v] = obj.getParameters(key);
+                [~, v] = obj.getMatchingKeyValue(key);
             end
         end
 
-        function [keys, values] = getParameters(obj, pattern)
+        function [keys, values] = getMatchingKeyValue(obj, pattern)
             % keys - Returns the matched parameter for given
             % search string
             %
@@ -43,13 +43,13 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
             % If found returns the equivalent value
             %
             % usage :
-            %       getParameters('chan1')
-            %       getParameters('chan1Mode')
+            %       getMatchingKeyValue('chan1')
+            %       getMatchingKeyValue('chan1Mode')
             
-            [keys, values] = getParameters@sa_labs.analysis.entity.KeyValueEntity(obj, pattern);
+            [keys, values] = getMatchingKeyValue@sa_labs.analysis.entity.KeyValueEntity(obj, pattern);
             
             if ~ isempty(obj.parentCell)
-                [parentKeys, parentValues] = obj.parentCell.getParameters(pattern);
+                [parentKeys, parentValues] = obj.parentCell.getMatchingKeyValue(pattern);
                 keys = [keys, parentKeys];
                 values = [values, parentValues];
             end

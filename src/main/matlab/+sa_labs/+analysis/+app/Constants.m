@@ -14,7 +14,7 @@ classdef Constants < handle
         FEATURE_DESC_FILE_NAME = 'feature-description.csv'
         ANALYSIS_LOGGER = 'sa-labs-analysis-core-logger'
 
-        EPOCH_KEY_SUFFIX = '_EPOCH'
+        EPOCH_KEY_SUFFIX = 'EPOCH'
     end
 end
 

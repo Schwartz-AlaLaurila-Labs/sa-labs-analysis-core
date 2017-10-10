@@ -20,7 +20,7 @@ classdef EpochDataTest < matlab.unittest.TestCase
             obj.verifyEmpty(epochData.get('unknown'));
         end
         
-        function testGetParameters(obj)
+        function testGetMatchingKeyValue(obj)
         	import sa_labs.analysis.entity.*;
 
         	epochData = EpochData();
@@ -28,7 +28,7 @@ classdef EpochDataTest < matlab.unittest.TestCase
         	values = {'cell-attached', 'cell-attached', 'whole-cell'};
         	epochData.attributes = containers.Map(keys, values);
 
-        	[actualKeys, actualValues] = epochData.getParameters('mode');
+        	[actualKeys, actualValues] = epochData.getMatchingKeyValue('mode');
         	obj.verifyEmpty(setdiff(actualKeys, keys));
         	obj.verifyEmpty(setdiff(actualValues, values));
         end

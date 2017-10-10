@@ -55,7 +55,7 @@ classdef KeyValueEntity < handle & matlab.mixin.CustomDisplay
             end
         end
         
-        function [keys, values] = getParameters(obj, pattern)
+        function [keys, values] = getMatchingKeyValue(obj, pattern)
             
             % keys - Returns the matched parameter for given
             % search string
@@ -64,8 +64,8 @@ classdef KeyValueEntity < handle & matlab.mixin.CustomDisplay
             % search string
             %
             % usage :
-            %       getParameters('chan1')
-            %       getParameters('chan1Mode')
+            %       getMatchingKeyValue('chan1')
+            %       getMatchingKeyValue('chan1Mode')
             
             import sa_labs.analysis.util.*;
             [keys, values] = collections.getMatchingKeyValue(obj.attributes, pattern);

@@ -38,15 +38,13 @@ classdef EpochGroupTest < matlab.unittest.TestCase
             epochGroup = entity.EpochGroup('test', 'param');
             epochGroup.device = 'Amp1';
             epochGroup.populateEpochResponseAsFeature(epochs);
+            obj.verifyEqual(epochGroup.getFeatureData('AMP1_EPOCH'), [(1:10)', (11:20)']);
+            obj.verifyEqual(epochGroup.getFeatureData('AMP1_SPIKES'), [(1:5)', (11:15)']);
             
             epochGroup.device = 'Amp2';
             epochGroup.populateEpochResponseAsFeature(epochs);
-            
-            obj.verifyEqual(epochGroup.getFeatureData('AMP1_EPOCH'), [(1:10)', (11:20)']);
             obj.verifyEqual(epochGroup.getFeatureData('AMP2_EPOCH'), [(1:10)', (11:20)']);
-            obj.verifyEqual(epochGroup.getFeatureData('AMP1_SPIKES'), [(1:5)', (11:15)']);
             obj.verifyEqual(epochGroup.getFeatureData('AMP2_SPIKES'), [(6:10)', (16:20)']);
-
         end
     end    
 end
