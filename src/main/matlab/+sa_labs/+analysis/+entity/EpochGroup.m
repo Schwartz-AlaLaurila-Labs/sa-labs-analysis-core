@@ -1,12 +1,12 @@
-classdef FeatureGroup < sa_labs.analysis.entity.Group
+classdef EpochGroup < sa_labs.analysis.entity.Group
     
     properties
-        id                  % Identifier of the featureGroup, assigned by NodeManager @see NodeManager.addFeatureGroup
+        id                  % Identifier of the epochGroup, assigned by NodeManager @see NodeManager.addEpochGroup
         device              % Amplifier channel name Eg 'Amp1'
     end
     
     properties(SetAccess = immutable)
-        splitParameter      % Defines level of featureGroup in tree
+        splitParameter      % Defines level of epochGroup in tree
         splitValue          % Defines the branch of tree
     end
     
@@ -17,7 +17,7 @@ classdef FeatureGroup < sa_labs.analysis.entity.Group
     
     methods
         
-        function obj = FeatureGroup(splitParameter, splitValue, name)
+        function obj = EpochGroup(splitParameter, splitValue, name)
             if nargin < 3
                 name = [splitParameter '==' num2str(splitValue)];
             end

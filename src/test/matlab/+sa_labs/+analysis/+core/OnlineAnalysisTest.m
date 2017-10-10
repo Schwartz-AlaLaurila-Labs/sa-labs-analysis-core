@@ -65,7 +65,7 @@ classdef OnlineAnalysisTest < matlab.unittest.TestCase
                 t = analysis.getResult();
                 % TODO replace this with query manager
                 
-                node = core.FeatureTreeBuilder('name', 'root', t).findFeatureGroup(['stimTime==' num2str(stimTime)]);
+                node = core.FeatureTreeBuilder('name', 'root', t).findEpochGroup(['stimTime==' num2str(stimTime)]);
                 obj.verifyEqual(analysis.nodeIdMap('stimTime'), node.id);
             end
             tree = analysis.getResult();

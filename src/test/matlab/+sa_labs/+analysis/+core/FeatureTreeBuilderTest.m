@@ -13,22 +13,22 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
             obj.treeIndices = struct();
             obj.builder = core.FeatureTreeBuilder('analysis', 'Light-step-analysis');
             
-            obj.treeIndices.amp1 = obj.builder.addFeatureGroup(1, 'Amp', 'Amplifier_ch1', 1:500);
-            obj.treeIndices.amp2 = obj.builder.addFeatureGroup(1, 'Amp', 'Amplifier_ch2', 1:500);
+            obj.treeIndices.amp1 = obj.builder.addEpochGroup(1, 'Amp', 'Amplifier_ch1', 1:500);
+            obj.treeIndices.amp2 = obj.builder.addEpochGroup(1, 'Amp', 'Amplifier_ch2', 1:500);
             
-            obj.treeIndices.ds1 = obj.builder.addFeatureGroup(obj.treeIndices.amp1, 'EpochGroup', 'Light_Step_20', 1:250);
-            obj.treeIndices.ds2 = obj.builder.addFeatureGroup(obj.treeIndices.amp1, 'EpochGroup', 'Light_Step_400', 251:500);
-            obj.treeIndices.ds3 = obj.builder.addFeatureGroup(obj.treeIndices.amp2, 'EpochGroup', 'Light_Step_20', 1:250);
-            obj.treeIndices.ds4 = obj.builder.addFeatureGroup(obj.treeIndices.amp2, 'EpochGroup', 'Light_Step_400', 251:500);
+            obj.treeIndices.ds1 = obj.builder.addEpochGroup(obj.treeIndices.amp1, 'EpochGroup', 'Light_Step_20', 1:250);
+            obj.treeIndices.ds2 = obj.builder.addEpochGroup(obj.treeIndices.amp1, 'EpochGroup', 'Light_Step_400', 251:500);
+            obj.treeIndices.ds3 = obj.builder.addEpochGroup(obj.treeIndices.amp2, 'EpochGroup', 'Light_Step_20', 1:250);
+            obj.treeIndices.ds4 = obj.builder.addEpochGroup(obj.treeIndices.amp2, 'EpochGroup', 'Light_Step_400', 251:500);
             
-            obj.treeIndices.ds1_rstar_0_01 = obj.builder.addFeatureGroup(obj.treeIndices.ds1, 'rstar', '0.01', 1:2:250);
-            obj.treeIndices.ds1_rstar_0_1 = obj.builder.addFeatureGroup(obj.treeIndices.ds1, 'rstar', '0.1', 2:2:250);
-            obj.treeIndices.ds2_rstar_0_01 = obj.builder.addFeatureGroup(obj.treeIndices.ds2, 'rstar', '0.01', 1:2:250);
-            obj.treeIndices.ds2_rstar_0_1 = obj.builder.addFeatureGroup(obj.treeIndices.ds2, 'rstar', '0.1', 2:2:250);
-            obj.treeIndices.ds3_rstar_0_01 = obj.builder.addFeatureGroup(obj.treeIndices.ds3, 'rstar', '0.01', 1:2:250);
-            obj.treeIndices.ds3_rstar_0_1 = obj.builder.addFeatureGroup(obj.treeIndices.ds3, 'rstar', '0.1', 2:2:250);
-            obj.treeIndices.ds4_rstar_0_01 = obj.builder.addFeatureGroup(obj.treeIndices.ds4, 'rstar', '0.01', 1:2:250);
-            obj.treeIndices.ds4_rstar_0_1 = obj.builder.addFeatureGroup(obj.treeIndices.ds4, 'rstar', '0.1', 2:2:250);
+            obj.treeIndices.ds1_rstar_0_01 = obj.builder.addEpochGroup(obj.treeIndices.ds1, 'rstar', '0.01', 1:2:250);
+            obj.treeIndices.ds1_rstar_0_1 = obj.builder.addEpochGroup(obj.treeIndices.ds1, 'rstar', '0.1', 2:2:250);
+            obj.treeIndices.ds2_rstar_0_01 = obj.builder.addEpochGroup(obj.treeIndices.ds2, 'rstar', '0.01', 1:2:250);
+            obj.treeIndices.ds2_rstar_0_1 = obj.builder.addEpochGroup(obj.treeIndices.ds2, 'rstar', '0.1', 2:2:250);
+            obj.treeIndices.ds3_rstar_0_01 = obj.builder.addEpochGroup(obj.treeIndices.ds3, 'rstar', '0.01', 1:2:250);
+            obj.treeIndices.ds3_rstar_0_1 = obj.builder.addEpochGroup(obj.treeIndices.ds3, 'rstar', '0.1', 2:2:250);
+            obj.treeIndices.ds4_rstar_0_01 = obj.builder.addEpochGroup(obj.treeIndices.ds4, 'rstar', '0.01', 1:2:250);
+            obj.treeIndices.ds4_rstar_0_1 = obj.builder.addEpochGroup(obj.treeIndices.ds4, 'rstar', '0.1', 2:2:250);
             
             disp('Tree information - ');
             obj.builder.getStructure().tostring() % print tree
@@ -42,7 +42,7 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
         end
 
         function testCollect(obj)
-            childNodes = obj.builder.findFeatureGroup('rstar');
+            childNodes = obj.builder.findEpochGroup('rstar');
             % prepare child nodes for additional parameters
             parameters = struct();
             parameters.ndf = {'a1a', 'a2a'};
@@ -51,7 +51,7 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
                 childNodes(i).setParameters(parameters);
             end
             % get amplifier nodes
-            amp1LightstepsNodes = obj.builder.findFeatureGroup('Light_Step_20');
+            amp1LightstepsNodes = obj.builder.findEpochGroup('Light_Step_20');
             amp1Lightstep = amp1LightstepsNodes(1);
             obj.builder.collect([childNodes(:).id], 'splitValue', 'rstar_from_child')
             
@@ -60,7 +60,7 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
             obj.verifyError(handle,'MATLAB:class:SetProhibited');
         end
 
-        function testRemoveFeatureGroup(obj)
+        function testRemoveEpochGroup(obj)
              % TODO implement the test case
         end
 
@@ -68,18 +68,18 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
              % TODO implement the test case
         end
 
-        function testIsFeatureGroupAlreadyPresent(obj)
+        function testIsEpochGroupAlreadyPresent(obj)
              % TODO implement the test case
         end
 
-        function testFindFeatureGroup(obj)
+        function testFindEpochGroup(obj)
             
             % Root node check
-            nodes = obj.builder.findFeatureGroup('Light-step-analysis');
+            nodes = obj.builder.findEpochGroup('Light-step-analysis');
             obj.verifyLength(nodes, 1);
             obj.verifyEqual(nodes.id, 1);
             
-            nodes = obj.builder.findFeatureGroup('Amp');
+            nodes = obj.builder.findEpochGroup('Amp');
             obj.verifyLength(nodes, 2);
             obj.verifyEqual(nodes(1).id, obj.treeIndices.amp1);
             obj.verifyEqual(nodes(2).id, obj.treeIndices.amp2);
@@ -89,9 +89,9 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
                 obj.verifyEqual(nodes(i).epochIndices, 1:500);
             end
             % Boundry cases
-            nodes = obj.builder.findFeatureGroup('unknown');
+            nodes = obj.builder.findEpochGroup('unknown');
             obj.verifyEmpty(nodes);
-            nodes = obj.builder.findFeatureGroup([]);
+            nodes = obj.builder.findEpochGroup([]);
             obj.verifyEmpty(nodes);
         end
         
@@ -103,9 +103,9 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
                 obj.treeIndices.ds3, obj.treeIndices.ds3_rstar_0_01, obj.treeIndices.ds3_rstar_0_1 ];
             obj.verifyEqual([nodes(:).id], expected);
             % Boundry cases
-            nodes = obj.builder.findFeatureGroup('unknown');
+            nodes = obj.builder.findEpochGroup('unknown');
             obj.verifyEmpty(nodes);
-            nodes = obj.builder.findFeatureGroup([]);
+            nodes = obj.builder.findEpochGroup([]);
             obj.verifyEmpty(nodes);
         end
         
@@ -114,80 +114,80 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
             expected = [obj.treeIndices.ds1, obj.treeIndices.ds2, obj.treeIndices.ds3, obj.treeIndices.ds4];
             obj.verifyEqual([nodes(:).id], expected);
             % Boundry cases
-            nodes = obj.builder.findFeatureGroup('unknown');
+            nodes = obj.builder.findEpochGroup('unknown');
             obj.verifyEmpty(nodes);
-            nodes = obj.builder.findFeatureGroup([]);
+            nodes = obj.builder.findEpochGroup([]);
             obj.verifyEmpty(nodes);
         end
         
-        function testGetFeatureGroups(obj)
+        function testGetEpochGroups(obj)
             % check for null indices
-            n = obj.builder.getFeatureGroups([]);
+            n = obj.builder.getEpochGroups([]);
             obj.verifyEmpty(n);
             
             % single node check
-            n = obj.builder.getFeatureGroups(obj.treeIndices.ds4_rstar_0_1);
+            n = obj.builder.getEpochGroups(obj.treeIndices.ds4_rstar_0_1);
             obj.verifyEqual(n.id, obj.treeIndices.ds4_rstar_0_1);
         end
         
-        function testFindFeatureGroupId(obj)
-            id = obj.builder.findFeatureGroupId('Amp==Amplifier_ch1');
+        function testFindEpochGroupId(obj)
+            id = obj.builder.findEpochGroupId('Amp==Amplifier_ch1');
             obj.verifyEqual(id, obj.treeIndices.amp1);
             
             % search on ds4 subtree
-            id = obj.builder.findFeatureGroupId('rstar==0.01', obj.treeIndices.ds4);
+            id = obj.builder.findEpochGroupId('rstar==0.01', obj.treeIndices.ds4);
             obj.verifyEqual(id, obj.treeIndices.ds4_rstar_0_01);
             
             % valid subtree but invalid search expression
-            id = obj.builder.findFeatureGroupId('Light_Step_500', obj.treeIndices.amp2);
+            id = obj.builder.findEpochGroupId('Light_Step_500', obj.treeIndices.amp2);
             obj.verifyEmpty(id);            
         end
         
         function validateNodeIdAfterTreeMerge(obj)
             import sa_labs.analysis.*;
             
-            expectedFirstLeaf = obj.builder.getFeatureGroups(obj.treeIndices.ds1_rstar_0_01);
-            expecteLastLeaf = obj.builder.getFeatureGroups(obj.treeIndices.ds4_rstar_0_1);
+            expectedFirstLeaf = obj.builder.getEpochGroups(obj.treeIndices.ds1_rstar_0_01);
+            expecteLastLeaf = obj.builder.getEpochGroups(obj.treeIndices.ds4_rstar_0_1);
             n = obj.builder.dataStore.nnodes;
 
             b = factory.AnalysisFactory.createFeatureBuilder('cell', 'ac2');
-            b.addFeatureGroup(1, 'Amp', 'Amplifier_ch3', 1:500);
-            b.addFeatureGroup(1, 'Amp', 'Amplifier_ch4', 1:500);
+            b.addEpochGroup(1, 'Amp', 'Amplifier_ch3', 1:500);
+            b.addEpochGroup(1, 'Amp', 'Amplifier_ch4', 1:500);
             % validate leaf
             disp(' Merging tree ');
             obj.builder.append(b.dataStore, true);
-            actual = obj.builder.getFeatureGroups(obj.treeIndices.ds1_rstar_0_01);
+            actual = obj.builder.getEpochGroups(obj.treeIndices.ds1_rstar_0_01);
             obj.verifyEqual(actual.name, expectedFirstLeaf.name);
             
-            actual = obj.builder.getFeatureGroups(obj.treeIndices.ds4_rstar_0_1);
+            actual = obj.builder.getEpochGroups(obj.treeIndices.ds4_rstar_0_1);
             obj.verifyEqual(actual.name, expecteLastLeaf.name);
             
             % non leaf nodes
-            actual = obj.builder.findFeatureGroup('Amp==Amplifier_ch3');
+            actual = obj.builder.findEpochGroup('Amp==Amplifier_ch3');
             obj.verifyEqual(actual.id, n + 2);
-            actual = obj.builder.findFeatureGroup('Amp==Amplifier_ch4');
+            actual = obj.builder.findEpochGroup('Amp==Amplifier_ch4');
             obj.verifyEqual(actual.id, n + 3);
             
             obj.builder.getStructure().tostring() % print tree
         end
         
-        function testBasicFeatureGroup(obj)
+        function testBasicEpochGroup(obj)
             import sa_labs.analysis.*;
              b = factory.AnalysisFactory.createFeatureBuilder('cell', 'ac2');
             % empty check
-            obj.verifyFalse(b.isBasicFeatureGroup([]));
-            id = b.addFeatureGroup(1, 'Amp', 'Amplifier_ch3', 1:500);
+            obj.verifyFalse(b.isBasicEpochGroup([]));
+            id = b.addEpochGroup(1, 'Amp', 'Amplifier_ch3', 1:500);
             
-            obj.verifyTrue(b.isBasicFeatureGroup(b.getFeatureGroups(id)));
-            id = b.addFeatureGroup(id, 'rstar', '0.01', 1:500);
+            obj.verifyTrue(b.isBasicEpochGroup(b.getEpochGroups(id)));
+            id = b.addEpochGroup(id, 'rstar', '0.01', 1:500);
             
-            obj.verifyFalse(b.isBasicFeatureGroup(b.getFeatureGroups(1)));
-            obj.verifyTrue(b.isBasicFeatureGroup(b.getFeatureGroups(id)));
+            obj.verifyFalse(b.isBasicEpochGroup(b.getEpochGroups(1)));
+            obj.verifyTrue(b.isBasicEpochGroup(b.getEpochGroups(id)));
             
             b = obj.builder;
             % array of nodes
-            obj.verifyTrue(b.isBasicFeatureGroup(b.getFeatureGroups([obj.treeIndices.ds1_rstar_0_01, obj.treeIndices.ds4_rstar_0_1])));
-            obj.verifyFalse(b.isBasicFeatureGroup(b.getFeatureGroups([obj.treeIndices.ds1_rstar_0_01, obj.treeIndices.ds4_rstar_0_1, obj.treeIndices.ds4])));
+            obj.verifyTrue(b.isBasicEpochGroup(b.getEpochGroups([obj.treeIndices.ds1_rstar_0_01, obj.treeIndices.ds4_rstar_0_1])));
+            obj.verifyFalse(b.isBasicEpochGroup(b.getEpochGroups([obj.treeIndices.ds1_rstar_0_01, obj.treeIndices.ds4_rstar_0_1, obj.treeIndices.ds4])));
         end
 
     end

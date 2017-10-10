@@ -183,11 +183,11 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             obj.analysisDao.saveProject(project);
         end
         
-        function finder = applyAnalysis(obj, finder, featureGroup, functions)
+        function finder = applyAnalysis(obj, finder, epochGroup, functions)
             import sa_labs.analysis.*;
             
-            project = finder.findFeatureGroup('project').splitValue;
-            groups = finder.findFeatureGroup('analysis');
+            project = finder.findEpochGroup('project').splitValue;
+            groups = finder.findEpochGroup('analysis');
             
             dao = obj.analysisDao;
             factory = obj.analysisFactory;
@@ -201,7 +201,7 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
                 
                 analysis = factory.createOfflineAnalysis(protocol, cellData);
                 analysis.featureBuilder.dataStore = dao.findAnalysisResult(group.splitValue);
-                analysis.addFeaturesToGroup(featureGroup, functions);
+                analysis.addFeaturesToGroup(epochGroup, functions);
                 result = analysis.getResult();
                 
                 dao.saveAnalysisResults(analysis.identifier, result, protocol);

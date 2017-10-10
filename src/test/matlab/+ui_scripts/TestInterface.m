@@ -26,7 +26,7 @@ f3.id = 'epoch (3)';
 f4 = entity.Feature(description, noise);
 f4.id = 'epoch (4)';
 
-groupOne = Mock(entity.FeatureGroup('rstar', '0.01'));
+groupOne = Mock(entity.EpochGroup('rstar', '0.01'));
 groupOne.when.getFeature(AnyArgs())...
     .thenReturn([f1, f2, f3, f4]);
 
@@ -35,6 +35,6 @@ groupOne.when.getFeature(AnyArgs())...
 v = ui.AnalysisManagerView();
 v.show();
 v.getAnalysisGroupsNodes().Name = 'Light step';
-groupNode = v.addFeatureGroupNode(v.getAnalysisGroupsNodes, groupOne.name , groupOne);
+groupNode = v.addEpochGroupNode(v.getAnalysisGroupsNodes, groupOne.name , groupOne);
 arrayfun(@(f) v.addFeatureNode(groupNode, f.id, f), groupOne.getFeature(description.id), 'UniformOutput', false);
 

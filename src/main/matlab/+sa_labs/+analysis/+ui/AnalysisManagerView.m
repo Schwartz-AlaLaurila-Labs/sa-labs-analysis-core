@@ -5,7 +5,7 @@ classdef AnalysisManagerView < appbox.View
         SelectedAnalysisGroupSignal
         SelectedFeatureSignal
         OpenAxesInNewWindow
-        AddFeatureGroup
+        AddEpochGroup
         AddFeature
     end
     
@@ -65,7 +65,7 @@ classdef AnalysisManagerView < appbox.View
             uimenu( ...
                 'Parent', menu, ...
                 'Label', 'Add Feature Group...', ...
-                'Callback', @(h,d)notify(obj, 'AddFeatureGroup'));
+                'Callback', @(h,d)notify(obj, 'AddEpochGroup'));
             menu = obj.addEntityContextMenus(menu);
             
             set(groups, 'UIContextMenu', menu);
@@ -186,7 +186,7 @@ classdef AnalysisManagerView < appbox.View
             uimenu( ...
                 'Parent', menu, ...
                 'Label', 'Add Feature Group ..', ...
-                'Callback', @(h,d)notify(obj, 'AddFeatureGroup'));
+                'Callback', @(h,d)notify(obj, 'AddEpochGroup'));
             menu = obj.addEntityContextMenus(menu);
             set(n, 'UIContextMenu', menu);
         end
@@ -195,7 +195,7 @@ classdef AnalysisManagerView < appbox.View
             n = obj.analysisTree.Root.Children;
         end
         
-        function n = addFeatureGroupNode(obj, parent, name, entity)
+        function n = addEpochGroupNode(obj, parent, name, entity)
             value.entity = entity;
             value.type = sa_labs.analysis.ui.AnalysisNodeType.FEATURE_GROUP;
             n = uiextras.jTree.TreeNode( ...

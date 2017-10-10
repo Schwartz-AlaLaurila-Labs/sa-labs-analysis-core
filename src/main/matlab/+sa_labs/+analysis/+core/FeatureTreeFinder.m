@@ -16,17 +16,17 @@ classdef FeatureTreeFinder < handle
             tf = obj.tree.treefun(@(node) node.id == id).any();
         end
         
-        function tf = isBasicFeatureGroup(obj, featureGroups)
-            tf = ~ isempty(featureGroups) && all(ismember([featureGroups.id], obj.tree.findleaves)) == 1;
+        function tf = isBasicEpochGroup(obj, epochGroups)
+            tf = ~ isempty(epochGroups) && all(ismember([epochGroups.id], obj.tree.findleaves)) == 1;
         end
         
         function tree = getStructure(obj)
-            tree = obj.tree.treefun(@(featureGroup) strcat(featureGroup.name, ' (' , num2str(featureGroup.id), ') '));
+            tree = obj.tree.treefun(@(epochGroup) strcat(epochGroup.name, ' (' , num2str(epochGroup.id), ') '));
         end
         
-        function featureGroups = getFeatureGroups(obj, ids)
-            featureGroups = arrayfun(@(index) obj.tree.get(index), ids, 'UniformOutput', false);
-            featureGroups = [featureGroups{:}];
+        function epochGroups = getEpochGroups(obj, ids)
+            epochGroups = arrayfun(@(index) obj.tree.get(index), ids, 'UniformOutput', false);
+            epochGroups = [epochGroups{:}];
         end
         
         function query = find(obj, name, varargin)
@@ -35,72 +35,72 @@ classdef FeatureTreeFinder < handle
             ip.parse(varargin{:});
             hasParent = ip.Results.hasParent;
             
-            parentGroups = obj.findFeatureGroup(hasParent);
+            parentGroups = obj.findEpochGroup(hasParent);
             if all(isempty(parentGroups))
-                query = linq(obj.findFeatureGroup(name));
+                query = linq(obj.findEpochGroup(name));
                 return;
             end
             indices = [];
             for id = [parentGroups(:).id]
-                indices = [indices, obj.findFeatureGroupId(name, id)]; %#ok;
+                indices = [indices, obj.findEpochGroupId(name, id)]; %#ok;
             end
-            featureGroups = obj.getFeatureGroups(indices);
-            query = linq(featureGroups);
+            epochGroups = obj.getEpochGroups(indices);
+            query = linq(epochGroups);
         end
         
         function groups = findInBranch(obj, group, name)
             groups = [];
-            for group = each(obj.getFeatureGroups(obj.tree.findpath(group.id, 1)))
+            for group = each(obj.getEpochGroups(obj.tree.findpath(group.id, 1)))
                 if strcmpi(name, group.splitParameter)
                     groups = [groups, group]; %#ok
                 end
             end
         end
 
-        function featureGroups = findFeatureGroup(obj, name)
-            featureGroups = [];
+        function epochGroups = findEpochGroup(obj, name)
+            epochGroups = [];
             
             if isempty(name)
                 return
             end
             indices = find(obj.getStructure().regexp(['\w*' name '\w*']).treefun(@any));
-            featureGroups = obj.getFeatureGroups(indices); %#ok
+            epochGroups = obj.getEpochGroups(indices); %#ok
         end
         
-        function id = findFeatureGroupId(obj, name, featureGroupId)
+        function id = findEpochGroupId(obj, name, epochGroupId)
             
-            if nargin < 3 || isempty(featureGroupId)
+            if nargin < 3 || isempty(epochGroupId)
                 id = find(obj.getStructure().regexp(['\w*' name '\w*']).treefun(@any));
                 return;
             end
-            subTree = obj.tree.subtree(featureGroupId);
-            structure = subTree.treefun(@(featureGroup) featureGroup.name);
+            subTree = obj.tree.subtree(epochGroupId);
+            structure = subTree.treefun(@(epochGroup) epochGroup.name);
             indices = find(structure.regexp(['\w*' name '\w*']).treefun(@any));
             
             id = arrayfun(@(index) subTree.get(index).id, indices);
         end
         
-        function featureGroups = getAllChildrensByName(obj, regexp)
-            featureGroupsByName = obj.findFeatureGroup(regexp);
-            featureGroups = [];
+        function epochGroups = getAllChildrensByName(obj, regexp)
+            epochGroupsByName = obj.findEpochGroup(regexp);
+            epochGroups = [];
             
-            for i = 1 : numel(featureGroupsByName)
-                featureGroup = featureGroupsByName(i);
-                subTree = obj.tree.subtree(featureGroup.id);
-                childFeatureGroups = arrayfun(@(index) subTree.get(index), subTree.depthfirstiterator, 'UniformOutput', false);
-                featureGroups = [featureGroups, childFeatureGroups{:}]; %#ok
+            for i = 1 : numel(epochGroupsByName)
+                epochGroup = epochGroupsByName(i);
+                subTree = obj.tree.subtree(epochGroup.id);
+                childEpochGroups = arrayfun(@(index) subTree.get(index), subTree.depthfirstiterator, 'UniformOutput', false);
+                epochGroups = [epochGroups, childEpochGroups{:}]; %#ok
             end
         end
         
-        function featureGroups = getImmediateChildrensByName(obj, regexp)
-            featureGroupsByName = obj.findFeatureGroup(regexp);
-            featureGroups = [];
+        function epochGroups = getImmediateChildrensByName(obj, regexp)
+            epochGroupsByName = obj.findEpochGroup(regexp);
+            epochGroups = [];
             
-            for i = 1 : numel(featureGroupsByName)
-                featureGroup = featureGroupsByName(i);
-                childrens = obj.tree.getchildren(featureGroup.id);
-                childFeatureGroups = obj.getFeatureGroups(childrens);
-                featureGroups = [featureGroups, childFeatureGroups]; %#ok
+            for i = 1 : numel(epochGroupsByName)
+                epochGroup = epochGroupsByName(i);
+                childrens = obj.tree.getchildren(epochGroup.id);
+                childEpochGroups = obj.getEpochGroups(childrens);
+                epochGroups = [epochGroups, childEpochGroups]; %#ok
             end
         end
     end

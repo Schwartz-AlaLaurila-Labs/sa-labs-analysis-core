@@ -22,8 +22,8 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
             obj.cellData = cellData;
         end
         
-        function epochs = getEpochs(obj, featureGroup)
-            epochs = obj.cellData.epochs(featureGroup.epochIndices);
+        function epochs = getEpochs(obj, epochGroup)
+            epochs = obj.cellData.epochs(epochGroup.epochIndices);
         end
 
         function devices = getDeviceForGroup(obj, group)
@@ -53,7 +53,7 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
             end
             obj.featureBuilder.curateDataStore();
             
-            group = obj.featureBuilder.getFeatureGroups(obj.DEFAULT_ROOT_ID);
+            group = obj.featureBuilder.getEpochGroups(obj.DEFAULT_ROOT_ID);
             group.setParameters(data.getPropertyMap());
             group.setParameters(struct('analysisProtocol', obj.analysisProtocol));
             
@@ -66,22 +66,22 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
             
             for i = 1 : numel(p)
                 key = p{i};
-                map(key) = obj.featureBuilder.findFeatureGroup(key);
+                map(key) = obj.featureBuilder.findEpochGroup(key);
             end
             [~, order] = ismember(p, map.keys);
         end
         
-        function copyEpochParameters(obj, featureGroup)
+        function copyEpochParameters(obj, epochGroup)
             
-            if ~ obj.featureBuilder.isPresent(featureGroup.id)
-                obj.log.info(['FeatureGroup with name [ ' featureGroup.name ' ] does not have childrens']);
+            if ~ obj.featureBuilder.isPresent(epochGroup.id)
+                obj.log.info(['EpochGroup with name [ ' epochGroup.name ' ] does not have childrens']);
                 return
             end
             
-            if obj.featureBuilder.isBasicFeatureGroup(featureGroup)
-                obj.setEpochParameters(featureGroup);
+            if obj.featureBuilder.isBasicEpochGroup(epochGroup)
+                obj.setEpochParameters(epochGroup);
             end
-            keySet = obj.cellData.getEpochKeysetUnion([featureGroup.epochIndices]);
+            keySet = obj.cellData.getEpochKeysetUnion([epochGroup.epochIndices]);
             
             if isempty(keySet)
                 obj.log.warn('keyset is empty, cannot percolate up epoch parameters');
@@ -92,19 +92,19 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
             % parameter' is 'devices' although it has multiple split values
             % Issue https://github.com/Schwartz-AlaLaurila-Labs/sa-labs-analysis-core/issues/5
 
-            if obj.featureBuilder.didCollectParameters(featureGroup)
+            if obj.featureBuilder.didCollectParameters(epochGroup)
                 
-                ids = [featureGroup.id];
+                ids = [epochGroup.id];
                 obj.log.trace('collecting epoch parameters ...');
                 obj.featureBuilder.collect(ids, keySet, keySet);
 
                 obj.log.trace('collecting cell parameters ...');
                 cellKeySet = obj.cellData.getPropertyMap().keys;
-                obj.featureBuilder.collect([featureGroup.id], cellKeySet, cellKeySet);
+                obj.featureBuilder.collect([epochGroup.id], cellKeySet, cellKeySet);
             end
             
-            if obj.isFeatureGroupSplitByDevice(featureGroup)
-                obj.featureBuilder.disableFurtherCollect(featureGroup);
+            if obj.isEpochGroupSplitByDevice(epochGroup)
+                obj.featureBuilder.disableFurtherCollect(epochGroup);
             end
         end
     end
@@ -129,7 +129,7 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
             % delete the parent node !
             
             if isempty(splitValues) && length(params) > 1 && parentId > obj.DEFAULT_ROOT_ID
-                obj.featureBuilder.removeFeatureGroup(parentId);
+                obj.featureBuilder.removeEpochGroup(parentId);
             end
             
             for i = 1 : length(splitValues)
@@ -141,28 +141,28 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
                     continue
                 end
 
-                [id, featureGroup] = obj.featureBuilder.addFeatureGroup(parentId, splitBy, splitValue, epochIndices);
+                [id, epochGroup] = obj.featureBuilder.addEpochGroup(parentId, splitBy, splitValue, epochIndices);
                 
                 if length(params) > 1
                     obj.add(id, epochIndices, params(2 : end));
                 end
-                obj.copyEpochParameters(featureGroup);
+                obj.copyEpochParameters(epochGroup);
             end
         end
         
-        function setEpochParameters(obj, featureGroups)
+        function setEpochParameters(obj, epochGroups)
             data = obj.cellData;
             
-            for i = 1 : numel(featureGroups)
-                [p, v] = data.getParamValues(featureGroups(i).epochIndices);
+            for i = 1 : numel(epochGroups)
+                [p, v] = data.getParamValues(epochGroups(i).epochIndices);
                 
                 if isempty(p)
-                    obj.log.warn(['no epoch parameter found for given node ' num2str(featureGroups(i).id)]);
+                    obj.log.warn(['no epoch parameter found for given node ' num2str(epochGroups(i).id)]);
                     continue;
                 end
-                featureGroups(i).setParameters(containers.Map(p, v));
-                featureGroups(i).setParameters(data.getPropertyMap());
-                obj.log.trace(['setting epoch parameter for ' featureGroups(i).name ]);
+                epochGroups(i).setParameters(containers.Map(p, v));
+                epochGroups(i).setParameters(data.getPropertyMap());
+                obj.log.trace(['setting epoch parameter for ' epochGroups(i).name ]);
             end
         end
         

@@ -1,4 +1,4 @@
-classdef FeatureGroupTest < matlab.unittest.TestCase
+classdef EpochGroupTest < matlab.unittest.TestCase
     
    
     methods(Test)
@@ -6,16 +6,16 @@ classdef FeatureGroupTest < matlab.unittest.TestCase
         function testUpdate(obj)
             import sa_labs.analysis.*;
 
-            group = entity.FeatureGroup('test', 'param');
+            group = entity.EpochGroup('test', 'param');
             obj.verifyWarning(@()group.getFeatureData('none'), app.Exceptions.FEATURE_KEY_NOT_FOUND.msgId);
             obj.verifyError(@() group.getFeatureData({'none', 'other'}), app.Exceptions.MULTIPLE_FEATURE_KEY_PRESENT.msgId);
 
             % create a sample feature group
-            featureGroup = entity.FeatureGroup('Child', 'param');
-            newFeatureGroup = entity.FeatureGroup('Parent', 'param');
+            epochGroup = entity.EpochGroup('Child', 'param');
+            newEpochGroup = entity.EpochGroup('Parent', 'param');
             
-            obj.verifyError(@()newFeatureGroup.update(featureGroup, 'splitParameter', 'splitParameter'),'MATLAB:class:SetProhibited');
-            obj.verifyError(@()newFeatureGroup.update(featureGroup, 'splitValue', 'splitValue'),'MATLAB:class:SetProhibited');
+            obj.verifyError(@()newEpochGroup.update(epochGroup, 'splitParameter', 'splitParameter'),'MATLAB:class:SetProhibited');
+            obj.verifyError(@()newEpochGroup.update(epochGroup, 'splitValue', 'splitValue'),'MATLAB:class:SetProhibited');
         end
 
         function testGetFeatureData(obj)
@@ -35,17 +35,17 @@ classdef FeatureGroupTest < matlab.unittest.TestCase
             epochs(2).addDerivedResponse('spikes', 11 : 15, 'Amp1');
             epochs(2).addDerivedResponse('spikes', 16 : 20, 'Amp2');
 
-            featureGroup = entity.FeatureGroup('test', 'param');
-            featureGroup.device = 'Amp1';
-            featureGroup.populateEpochResponseAsFeature(epochs);
+            epochGroup = entity.EpochGroup('test', 'param');
+            epochGroup.device = 'Amp1';
+            epochGroup.populateEpochResponseAsFeature(epochs);
             
-            featureGroup.device = 'Amp2';
-            featureGroup.populateEpochResponseAsFeature(epochs);
+            epochGroup.device = 'Amp2';
+            epochGroup.populateEpochResponseAsFeature(epochs);
             
-            obj.verifyEqual(featureGroup.getFeatureData('AMP1_EPOCH'), [(1:10)', (11:20)']);
-            obj.verifyEqual(featureGroup.getFeatureData('AMP2_EPOCH'), [(1:10)', (11:20)']);
-            obj.verifyEqual(featureGroup.getFeatureData('AMP1_SPIKES'), [(1:5)', (11:15)']);
-            obj.verifyEqual(featureGroup.getFeatureData('AMP2_SPIKES'), [(6:10)', (16:20)']);
+            obj.verifyEqual(epochGroup.getFeatureData('AMP1_EPOCH'), [(1:10)', (11:20)']);
+            obj.verifyEqual(epochGroup.getFeatureData('AMP2_EPOCH'), [(1:10)', (11:20)']);
+            obj.verifyEqual(epochGroup.getFeatureData('AMP1_SPIKES'), [(1:5)', (11:15)']);
+            obj.verifyEqual(epochGroup.getFeatureData('AMP2_SPIKES'), [(6:10)', (16:20)']);
 
         end
     end    

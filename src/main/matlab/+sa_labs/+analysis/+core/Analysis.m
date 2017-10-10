@@ -63,8 +63,8 @@ classdef Analysis < handle
             end
         end
 
-        function tf = isFeatureGroupSplitByDevice(obj, featureGroup)
-            tf = strcmpi(featureGroup.splitParameter, 'devices');
+        function tf = isEpochGroupSplitByDevice(obj, epochGroup)
+            tf = strcmpi(epochGroup.splitParameter, 'devices');
         end
         
         function addFeaturesToGroup(obj, groups, functions)
@@ -74,19 +74,19 @@ classdef Analysis < handle
             
             for i = numel(parameters) : -1 : 1
                 parameter = parameters{i};
-                featureGroups = map(parameter);
-                valid = ismember({featureGroups.uuid}, {groups.uuid});
+                epochGroups = map(parameter);
+                valid = ismember({epochGroups.uuid}, {groups.uuid});
 
                 if any(valid)
-                    featureGroups = featureGroups(valid);
+                    epochGroups = epochGroups(valid);
                     functionsStr = obj.analysisProtocol.addExtractorFunctions(parameter, functions);
                 else
                     functionsStr = [];
                 end
                 
-                if ~ isempty(featureGroups)
-                    obj.log.debug(['feature extraction for [ ' parameter ' featureGroups id ' num2str([featureGroups.id]) ']']);
-                    obj.delegateFeatureExtraction(functionsStr, featureGroups);
+                if ~ isempty(epochGroups)
+                    obj.log.debug(['feature extraction for [ ' parameter ' epochGroups id ' num2str([epochGroups.id]) ']']);
+                    obj.delegateFeatureExtraction(functionsStr, epochGroups);
                 end
             end
             
@@ -103,11 +103,11 @@ classdef Analysis < handle
             for i = numel(parameters) : -1 : 1
                 parameter = parameters{i};
                 functions = obj.analysisProtocol.getExtractorFunctions(parameter);
-                featureGroups = map(parameter);
+                epochGroups = map(parameter);
                 
-                if ~ isempty(featureGroups)
-                    obj.log.debug(['feature extraction for [ ' parameter ' featureGroups id ' num2str([featureGroups.id]) ']']);
-                    obj.delegateFeatureExtraction(functions, featureGroups);
+                if ~ isempty(epochGroups)
+                    obj.log.debug(['feature extraction for [ ' parameter ' epochGroups id ' num2str([epochGroups.id]) ']']);
+                    obj.delegateFeatureExtraction(functions, epochGroups);
                 end
             end
         end
@@ -120,18 +120,18 @@ classdef Analysis < handle
     
     methods (Access = private)
         
-        function delegateFeatureExtraction(obj, functions, featureGroups)
+        function delegateFeatureExtraction(obj, functions, epochGroups)
             
             for i = 1 : numel(functions)
                 func = str2func(functions{i});
                 try
-                    for group = featureGroups
+                    for group = epochGroups
                         func(obj, group);
                     end
                     
                     obj.log.debug(['collecting features for function [ ' char(functions{i}) ' ]']);
-                    keySet = featureGroups.getFeatureKey();
-                    obj.featureBuilder.collect([featureGroups.id], keySet, keySet);
+                    keySet = epochGroups.getFeatureKey();
+                    obj.featureBuilder.collect([epochGroups.id], keySet, keySet);
                 catch exception
                     disp(getReport(exception, 'extended', 'hyperlinks', 'on'));
                     obj.log.error(exception.message);
@@ -140,8 +140,8 @@ classdef Analysis < handle
             
             if isempty(functions)
                 obj.log.debug('collecting child features as feature extractor functions are empty !');
-                keySet = featureGroups.getFeatureKey();
-                obj.featureBuilder.collect([featureGroups.id], keySet, keySet);
+                keySet = epochGroups.getFeatureKey();
+                obj.featureBuilder.collect([epochGroups.id], keySet, keySet);
             end
         end
     end

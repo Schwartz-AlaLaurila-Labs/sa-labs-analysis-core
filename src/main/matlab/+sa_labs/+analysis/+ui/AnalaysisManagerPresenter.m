@@ -56,7 +56,7 @@ classdef AnalaysisManagerPresenter < appbox.Presenter
             
             v = obj.view;
             obj.addListener(v, 'SelectedNodes', @obj.onViewSelectedNodes).Recursive = true;
-            obj.addListener(v, 'SelectedFeatureGroupSignal', @obj.onViewSelectedFeatureGroupSignal);
+            obj.addListener(v, 'SelectedEpochGroupSignal', @obj.onViewSelectedEpochGroupSignal);
             obj.addListener(v, 'SelectedFeatureSignal', @obj.onViewSelectedFeatureSignal);
             obj.addListener(v, 'AddFeature', @obj.onViewAddFeature);
             obj.addListener(v, 'SendEntityToWorkspace', @obj.onViewSelectedSendEntityToWorkspace);
@@ -88,7 +88,7 @@ classdef AnalaysisManagerPresenter < appbox.Presenter
         function onViewSelectedNodes(obj, ~, ~)
         end
         
-        function onViewSelectedFeatureGroupSignal(obj, ~, ~)
+        function onViewSelectedEpochGroupSignal(obj, ~, ~)
         end
         
         function onViewAddFeature(obj, ~, ~)

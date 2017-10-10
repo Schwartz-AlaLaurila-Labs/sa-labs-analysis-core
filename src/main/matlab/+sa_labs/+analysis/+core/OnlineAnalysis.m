@@ -29,7 +29,7 @@ classdef OnlineAnalysis < sa_labs.analysis.core.Analysis
             obj.log.debug(['started processing epoch stream id [ ' num2str(obj.runningEpochId) ' ]']);
         end
 
-        function epochs = getEpochs(obj, featureGroup) %#ok
+        function epochs = getEpochs(obj, epochGroup) %#ok
             epochs = obj.epochStream;
         end
     end
@@ -53,7 +53,7 @@ classdef OnlineAnalysis < sa_labs.analysis.core.Analysis
                 
                 % possible bottle neck if nodes are > 100,000 on first
                 % pause
-                id = obj.featureBuilder.findFeatureGroupId(name, obj.nodeId);
+                id = obj.featureBuilder.findEpochGroupId(name, obj.nodeId);
                 if isempty(id)
                     present = false;
                     break;
@@ -75,9 +75,9 @@ classdef OnlineAnalysis < sa_labs.analysis.core.Analysis
             for i = 1 : numel(p)
                 key = p{i};
                 id = obj.nodeIdMap(key);
-                featureGroup = obj.featureBuilder.getFeatureGroups(id);
+                epochGroup = obj.featureBuilder.getEpochGroups(id);
                 obj.log.trace([' id ' num2str(id) ' parameter ' key]);
-                map(key) = featureGroup;
+                map(key) = epochGroup;
             end
             if isempty(p)
                 return
@@ -88,7 +88,7 @@ classdef OnlineAnalysis < sa_labs.analysis.core.Analysis
         function copyEpochParameters(obj, nodes)
             keySet = obj.epochStream.parameters.keys;
             
-            if ~ obj.featureBuilder.isBasicFeatureGroup(nodes)
+            if ~ obj.featureBuilder.isBasicEpochGroup(nodes)
                 obj.featureBuilder.collect([nodes.id], keySet, keySet);
                 return
             end
@@ -125,7 +125,7 @@ classdef OnlineAnalysis < sa_labs.analysis.core.Analysis
             for i = 1 : numel(parameters)
                 splitBy = parameters{i};
                 splitValue = epochParameters(splitBy);
-                obj.nodeId = obj.featureBuilder.addFeatureGroup(obj.nodeId, splitBy, splitValue, EMPTY_EPOCH_INDEX);
+                obj.nodeId = obj.featureBuilder.addEpochGroup(obj.nodeId, splitBy, splitValue, EMPTY_EPOCH_INDEX);
                 
                 % update node map
                 obj.nodeIdMap(splitBy) = obj.nodeId;

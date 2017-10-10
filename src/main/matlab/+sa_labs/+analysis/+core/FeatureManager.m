@@ -42,13 +42,13 @@ classdef FeatureManager < handle
         end
         
         % TODO test
-        function updateFeatureDescription(obj, featureGroups)
+        function updateFeatureDescription(obj, epochGroups)
             import sa_labs.analysis.*;
-            keySet = featureGroups.getFeatureKey();
+            keySet = epochGroups.getFeatureKey();
             
             for i = 1 : numel(keySet)
                 key = keySet{i};
-                features = featureGroups.featureMap(key);
+                features = epochGroups.featureMap(key);
                 
                 if ~ isKey(obj.descriptionMap, key)
                     obj.descriptionMap(key) = features(1).description;

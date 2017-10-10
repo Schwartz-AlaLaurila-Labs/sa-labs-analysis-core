@@ -179,19 +179,19 @@ classdef Group < sa_labs.analysis.entity.KeyValueEntity
 	        obj.addParameter(key, new);
 	    end
 	    
-	    function update(obj, featureGroup, in, out)
+	    function update(obj, epochGroup, in, out)
 	        
-	        % Generic code to handle merge from source featureGroup to destination
-	        % obj(featureGroup). It merges following,
+	        % Generic code to handle merge from source epochGroup to destination
+	        % obj(epochGroup). It merges following,
 	        %
 	        %   1. properties
 	        %   2. Feature
 	        %   3. parameters 'matlab structure'
 	        %
 	        % arguments
-	        % featureGroup - source featureGroup
-	        % in  - It may be one of source featureGroup property, parameter and feature
-	        % out - It may be one of destination obj(featureGroup) property, parameter and feature
+	        % epochGroup - source epochGroup
+	        % in  - It may be one of source epochGroup property, parameter and feature
+	        % out - It may be one of destination obj(epochGroup) property, parameter and feature
 	        
 	        import sa_labs.analysis.util.collections.*;
 	        % safe casting
@@ -207,41 +207,41 @@ classdef Group < sa_labs.analysis.entity.KeyValueEntity
 	            error('id:update:prohibited', 'cannot updated instance id');
 	        end
 	        
-	        % case 1 - featureGroup.in and obj.out is present has properties
-	        if isprop(obj, out) && isprop(featureGroup, in)
+	        % case 1 - epochGroup.in and obj.out is present has properties
+	        if isprop(obj, out) && isprop(epochGroup, in)
 	            old = obj.(out);
-	            obj.(out) = addToCell(old, featureGroup.(in));
+	            obj.(out) = addToCell(old, epochGroup.(in));
 	            return
 	            
 	        end
-	        % case 2 - featureGroup.in is struct parameters & obj.out is class property
+	        % case 2 - epochGroup.in is struct parameters & obj.out is class property
 	        if isprop(obj, out)
 	            old = obj.(out);
-	            obj.(out) = addToCell(old, featureGroup.get(in));
+	            obj.(out) = addToCell(old, epochGroup.get(in));
 	            return
 	        end
 	        
-	        % case 3 featureGroup.in is class property but obj.out is struct
+	        % case 3 epochGroup.in is class property but obj.out is struct
 	        % parameters
-	        if isprop(featureGroup, in)
-	            obj.appendParameter(out, featureGroup.(in));
+	        if isprop(epochGroup, in)
+	            obj.appendParameter(out, epochGroup.(in));
 	            return
 	        end
 	        
 	        % case 4 in == out and its a key of featureMap
-	        keys = featureGroup.featureMap.keys;
+	        keys = epochGroup.featureMap.keys;
 	        if ismember(in, keys)
 	            
 	            if ~ strcmp(in, out)
 	                error('in:out:mismatch', 'In and out should be same for appending feature map')
 	            end
-	            obj.appendFeature(featureGroup.featureMap(in))
+	            obj.appendFeature(epochGroup.featureMap(in))
 	            return
 	        end
 	        
 	        % case 5 just append the in to out struct parameters
 	        % for unknown in parameters, it creates empty out paramters
-	        obj.appendParameter(out, featureGroup.get(in));
+	        obj.appendParameter(out, epochGroup.get(in));
 	    end
 	end
 

@@ -18,9 +18,9 @@ classdef FeatureTreeBuilder < sa_labs.analysis.core.FeatureTreeFinder
         
         function setRootName(obj, name, value)
             import sa_labs.analysis.*;
-            featureGroup = entity.FeatureGroup(name, value);
-            featureGroup.id = 1;
-            obj.setfeatureGroup(featureGroup.id, featureGroup);
+            epochGroup = entity.EpochGroup(name, value);
+            epochGroup.id = 1;
+            obj.setepochGroup(epochGroup.id, epochGroup);
         end
         
         function obj = set.dataStore(obj, dataTree)
@@ -42,29 +42,29 @@ classdef FeatureTreeBuilder < sa_labs.analysis.core.FeatureTreeFinder
             
             obj.tree = obj.tree.graft(1, dataTree);
             childrens = obj.tree.getchildren(1);
-            obj.updateDataStoreFeatureGroupId();
+            obj.updateDataStoreEpochGroupId();
             obj.log.info([ dataTree.get(1).name ' is grafted to parant tree '])
             
             if copyEnabled
                 id = childrens(end);
-                group = obj.getFeatureGroups(id);
-                parent = obj.getFeatureGroups(1);
+                group = obj.getEpochGroups(id);
+                parent = obj.getEpochGroups(1);
                 obj.log.debug([' analysis parameter from [ ' group.name ' ] is pushed to [ ' parent.name ' ]'])
                 parent.setParameters(group.attributes);
             end
         end
         
-        function [id, featureGroup] = addFeatureGroup(obj, id, splitParameter, spiltValue, epochIndices)
+        function [id, epochGroup] = addEpochGroup(obj, id, splitParameter, spiltValue, epochIndices)
             
             import sa_labs.analysis.*;
-            featureGroup = entity.FeatureGroup(splitParameter, spiltValue);
-            featureGroup.epochIndices = epochIndices;
-            id = obj.addfeatureGroup(id, featureGroup);
-            featureGroup.id = id;
-            obj.log.trace(['feature group [ ' featureGroup.name ' ] is added at the id [ ' num2str(id) ' ]'])
+            epochGroup = entity.EpochGroup(splitParameter, spiltValue);
+            epochGroup.epochIndices = epochIndices;
+            id = obj.addepochGroup(id, epochGroup);
+            epochGroup.id = id;
+            obj.log.trace(['feature group [ ' epochGroup.name ' ] is added at the id [ ' num2str(id) ' ]'])
         end
         
-        function collect(obj, featureGroupIds, varargin)
+        function collect(obj, epochGroupIds, varargin)
             
             if length(varargin) == 2 && iscell(varargin{1}) && iscell(varargin{2})
                 inParameters = varargin{1};
@@ -79,49 +79,49 @@ classdef FeatureTreeBuilder < sa_labs.analysis.core.FeatureTreeFinder
                 error('Error: parameters must be specified in pairs');
             end
             
-            copy = @(in, out) arrayfun(@(id) obj.percolateUpFeatureGroup(id, in ,out), featureGroupIds);
+            copy = @(in, out) arrayfun(@(id) obj.percolateUpEpochGroup(id, in ,out), epochGroupIds);
             arrayfun(@(i) copy(inParameters{i}, outParameters{i}), 1 : n);
         end
         
-        function removeFeatureGroup(obj, id)
+        function removeEpochGroup(obj, id)
             if ~ isempty(obj.tree.getchildren(id))
-                error('cannot remove ! featureGroup has children');
+                error('cannot remove ! epochGroup has children');
             end
             obj.tree = obj.tree.removenode(id);
-            obj.updateDataStoreFeatureGroupId();
+            obj.updateDataStoreEpochGroupId();
         end
         
         function curateDataStore(obj)
-            ids = obj.tree.treefun(@(node) obj.isFeatureGroupAlreadyPresent(node.id)).find();
+            ids = obj.tree.treefun(@(node) obj.isEpochGroupAlreadyPresent(node.id)).find();
             
             while ~ isempty(ids)
                 id = ids(1);
                 obj.tree = obj.tree.removenode(id);
-                obj.updateDataStoreFeatureGroupId();
-                ids = obj.tree.treefun(@(node) obj.isFeatureGroupAlreadyPresent(node.id)).find();
+                obj.updateDataStoreEpochGroupId();
+                ids = obj.tree.treefun(@(node) obj.isEpochGroupAlreadyPresent(node.id)).find();
             end
         end
         
-        function tf = isFeatureGroupAlreadyPresent(obj, sourceId)
+        function tf = isEpochGroupAlreadyPresent(obj, sourceId)
             siblings = obj.tree.getsiblings(sourceId);
             ids = siblings(siblings ~= sourceId);
-            sourceGroup = obj.getFeatureGroups(sourceId);
+            sourceGroup = obj.getEpochGroups(sourceId);
             
             tf = ~ isempty(ids) &&...
-                any(arrayfun(@(id) strcmp(obj.getFeatureGroups(id).name, sourceGroup.name), ids))...
-                && obj.isBasicFeatureGroup(sourceGroup);
+                any(arrayfun(@(id) strcmp(obj.getEpochGroups(id).name, sourceGroup.name), ids))...
+                && obj.isBasicEpochGroup(sourceGroup);
         end
 
-        function tf = didCollectParameters(obj, featureGroup)
+        function tf = didCollectParameters(obj, epochGroup)
            t = obj.tree; 
-           parentId = t.getparent(featureGroup.id);
+           parentId = t.getparent(epochGroup.id);
            parentGroup = t.get(parentId);
            tf = ~ parentGroup.parametersCopied;
         end
 
-        function disableFurtherCollect(obj, featureGroup)
+        function disableFurtherCollect(obj, epochGroup)
             t = obj.tree; 
-            parentId = t.getparent(featureGroup.id);
+            parentId = t.getparent(epochGroup.id);
             parentGroup = t.get(parentId);
             parentGroup.parametersCopied = true;
         end
@@ -129,27 +129,27 @@ classdef FeatureTreeBuilder < sa_labs.analysis.core.FeatureTreeFinder
     
     methods(Access = private)
         
-        function percolateUpFeatureGroup(obj, featureGroupId, in , out)
+        function percolateUpEpochGroup(obj, epochGroupId, in , out)
             t = obj.tree;
-            featureGroup = t.get(featureGroupId);
-            parent = t.getparent(featureGroupId);
-            parentFeatureGroup = t.get(parent);
-            parentFeatureGroup.update(featureGroup, in, out);
-            obj.setfeatureGroup(parent, parentFeatureGroup);
-            info = ['pushing [ ' in ' ] from feature group [ ' featureGroup.name ' ] to parent [ ' parentFeatureGroup.name ' ]'];
+            epochGroup = t.get(epochGroupId);
+            parent = t.getparent(epochGroupId);
+            parentEpochGroup = t.get(parent);
+            parentEpochGroup.update(epochGroup, in, out);
+            obj.setepochGroup(parent, parentEpochGroup);
+            info = ['pushing [ ' in ' ] from feature group [ ' epochGroup.name ' ] to parent [ ' parentEpochGroup.name ' ]'];
             obj.log.trace(info)
         end
         
-        function setfeatureGroup(obj, parent, featureGroup)
-            obj.tree = obj.tree.set(parent, featureGroup);
+        function setepochGroup(obj, parent, epochGroup)
+            obj.tree = obj.tree.set(parent, epochGroup);
             
         end
         
-        function id = addfeatureGroup(obj, id, featureGroup)
-            [obj.tree, id] = obj.tree.addnode(id, featureGroup);
+        function id = addepochGroup(obj, id, epochGroup)
+            [obj.tree, id] = obj.tree.addnode(id, epochGroup);
         end
         
-        function updateDataStoreFeatureGroupId(obj)
+        function updateDataStoreEpochGroupId(obj)
             for i = obj.tree.breadthfirstiterator
                 if obj.tree.get(i).id ~= i
                     obj.log.trace(['updating tree index [ ' num2str(i) ' ]'])
