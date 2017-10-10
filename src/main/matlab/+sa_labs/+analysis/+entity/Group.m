@@ -1,4 +1,4 @@
-classdef AbstractGroup < sa_labs.analysis.entity.KeyValueEntity
+classdef Group < sa_labs.analysis.entity.KeyValueEntity
 
 	properties (Access = protected)
         featureMap 	 % Feature map with key as FeatureDescription.type and value as @see Feature instance	
@@ -11,7 +11,7 @@ classdef AbstractGroup < sa_labs.analysis.entity.KeyValueEntity
     
     methods 
 
-	    function obj = AbstractGroup(name)
+	    function obj = Group(name)
 	        obj.name = name;
 	        obj.featureMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
 	        obj.uuid = char(java.util.UUID.randomUUID);
@@ -50,19 +50,6 @@ classdef AbstractGroup < sa_labs.analysis.entity.KeyValueEntity
 	        obj.featureMap(id) = feature;
 	    end
 	    
-	    function appendFeature(obj, newFeatures)
-	        
-	        for i = 1 : numel(newFeatures)
-	            key = newFeatures(i).description.id;
-	            
-	            f = obj.getFeatures(key);
-	            if ~ isempty(f) && ismember({newFeatures(i).uuid}, {f.uuid})
-	                continue;
-	            end
-	            obj.featureMap = sa_labs.analysis.util.collections.addToMap(obj.featureMap, key, newFeatures(i));
-	        end
-	    end
-
 	    function features = getFeatures(obj, keys)
 	        
 	        % getFeatures - returns the feature based on FeatureDescription
@@ -91,6 +78,56 @@ classdef AbstractGroup < sa_labs.analysis.entity.KeyValueEntity
 	        keySet = obj.featureMap.keys;
 	    end
 
+	    function data = getFeatureData(obj, key)
+	    	import sa_labs.analysis.app.*;
+	    	
+	    	data = [];
+            features = [];
+            
+	    	if iscellstr(key) && numel(key) > 1
+	    	    throw(Exceptions.MULTIPLE_FEATURE_KEY_PRESENT.create())
+	    	end
+	    	
+	    	if isKey(obj.featureMap, obj.makeValidKey(key))
+	    	    features = obj.featureMap(obj.makeValidKey(key));
+	    	end
+
+	    	if isempty(features)
+	    		Exceptions.FEATURE_KEY_NOT_FOUND.create('warning', true)
+	    		return
+	    	end
+
+	    	try
+	    	    data = [features.data];
+	    	catch exception
+	    	    data = {features.data};
+	    	end
+	    end
+
+	    function tf = isFeatureEntity(~, refs)
+	        tf = all(cellfun(@(ref) isa(ref, 'sa_labs.analysis.entity.Feature'), refs));
+	    end
+
+	    function k = makeValidKey(~, key)
+	    	k = upper(key);
+	    end
+	end
+
+	methods (Hidden)
+
+	    function appendFeature(obj, newFeatures)
+	        
+	        for i = 1 : numel(newFeatures)
+	            key = newFeatures(i).description.id;
+	            
+	            f = obj.getFeatures(key);
+	            if ~ isempty(f) && ismember({newFeatures(i).uuid}, {f.uuid})
+	                continue;
+	            end
+	            obj.featureMap = sa_labs.analysis.util.collections.addToMap(obj.featureMap, key, newFeatures(i));
+	        end
+	    end
+	    
 	    function setParameters(obj, parameters)
 	        
 	        % setParameters - Copies from parameters to obj.parameters
@@ -213,32 +250,6 @@ classdef AbstractGroup < sa_labs.analysis.entity.KeyValueEntity
 	        % for unknown in parameters, it creates empty out paramters
 	        obj.appendParameter(out, featureGroup.get(in));
 	    end
-
-	    function data = getFeatureData(obj, key)
-	    	import sa_labs.analysis.app.*;
-	    	
-	    	data = [];
-	    	if iscellstr(key) && numel(key) > 1
-	    	    throw(Exceptions.MULTIPLE_FEATURE_KEY_PRESENT.create())
-	    	end
-	    	
-	    	if isKey(obj.featureMap, key)
-	    	    features = obj.featureMap(key);
-	    	else
-	    		features = obj.getDerivedFeatures(key);
-	    	end
-
-	    	if isempty(features)
-	    		Exceptions.FEATURE_KEY_NOT_FOUND.create('warning', true)
-	    		return
-	    	end
-
-	    	try
-	    	    data = [features.data];
-	    	catch exception
-	    	    data = {features.data};
-	    	end
-	    end
 	end
 
 	methods(Access = protected)
@@ -246,14 +257,6 @@ classdef AbstractGroup < sa_labs.analysis.entity.KeyValueEntity
 	    function addParameter(obj, property, value)
 	        % setParameters - set property, value pair to parameters
 	        obj.attributes(property) = value;
-	    end
-	    
-	    function tf = isFeatureEntity(~, refs)
-	        tf = all(cellfun(@(ref) isa(ref, 'sa_labs.analysis.entity.Feature'), refs));
-	    end
-
-	    function f = getDerivedFeatures(obj, key)
-	    	f = [];
 	    end
 	end
 end

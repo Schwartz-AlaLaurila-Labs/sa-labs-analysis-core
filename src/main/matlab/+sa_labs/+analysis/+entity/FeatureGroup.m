@@ -1,4 +1,4 @@
-classdef FeatureGroup < sa_labs.analysis.entity.AbstractGroup
+classdef FeatureGroup < sa_labs.analysis.entity.Group
     
     properties
         id                  % Identifier of the featureGroup, assigned by NodeManager @see NodeManager.addFeatureGroup
@@ -21,7 +21,7 @@ classdef FeatureGroup < sa_labs.analysis.entity.AbstractGroup
             if nargin < 3
                 name = [splitParameter '==' num2str(splitValue)];
             end
-            obj = obj@sa_labs.analysis.entity.AbstractGroup(name);
+            obj = obj@sa_labs.analysis.entity.Group(name);
             obj.splitParameter = splitParameter;
             obj.splitValue = splitValue;
             obj.parametersCopied = false;

@@ -1,4 +1,4 @@
-classdef EpochGroup < sa_labs.analysis.entity.AbstractGroup
+classdef EpochGroup < sa_labs.analysis.entity.Group
     
     properties
         epochIndices
@@ -13,7 +13,7 @@ classdef EpochGroup < sa_labs.analysis.entity.AbstractGroup
                 name = 'anonymous';
                 epochs = [];
             end
-            obj = obj@sa_labs.analysis.entity.AbstractGroup(num2str(name));
+            obj = obj@sa_labs.analysis.entity.Group(num2str(name));
             obj.epochIndices = epochIndices;
             obj.filter = filter;
 
