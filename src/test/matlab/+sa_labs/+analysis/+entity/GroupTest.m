@@ -30,9 +30,6 @@ classdef GroupTest < matlab.unittest.TestCase
         function testGetFeatureData(obj)
             import sa_labs.analysis.*;
             group = entity.Group('test==param');
-            obj.verifyWarning(@()group.getFeatureData('none'), app.Exceptions.FEATURE_KEY_NOT_FOUND.msgId);
-            obj.verifyError(@() group.getFeatureData({'none', 'other'}), app.Exceptions.MULTIPLE_FEATURE_KEY_PRESENT.msgId);
-            
             group.createFeature('TEST_FIRST', 1 : 1000, 'properties', []);
             obj.verifyEqual(group.getFeatureData('TEST_FIRST'),(1 : 1000)');
             

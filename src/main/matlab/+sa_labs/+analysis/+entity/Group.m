@@ -78,31 +78,24 @@ classdef Group < sa_labs.analysis.entity.KeyValueEntity
 	        keySet = obj.featureMap.keys;
 	    end
 
-	    function data = getFeatureData(obj, key)
-	    	import sa_labs.analysis.app.*;
-	    	
-	    	data = [];
+        function data = getFeatureData(obj, key)
+            import sa_labs.analysis.app.*;
+            
+            data = [];
             features = [];
             
-	    	if iscellstr(key) && numel(key) > 1
-	    	    throw(Exceptions.MULTIPLE_FEATURE_KEY_PRESENT.create())
-	    	end
-	    	
-	    	if isKey(obj.featureMap, obj.makeValidKey(key))
-	    	    features = obj.featureMap(obj.makeValidKey(key));
-	    	end
-
-	    	if isempty(features)
-	    		Exceptions.FEATURE_KEY_NOT_FOUND.create('warning', true)
-	    		return
-	    	end
-
-	    	try
-	    	    data = [features.data];
-	    	catch exception
-	    	    data = {features.data};
-	    	end
-	    end
+            if iscellstr(key) && numel(key) > 1
+                throw(Exceptions.MULTIPLE_FEATURE_KEY_PRESENT.create())
+            end
+            
+            if isKey(obj.featureMap, obj.makeValidKey(key))
+                features = obj.featureMap(obj.makeValidKey(key));
+            end
+            
+            if ~ isempty(features)
+                data = obj.getData(features);
+            end
+        end
 
 	    function tf = isFeatureEntity(~, refs)
 	        tf = all(cellfun(@(ref) isa(ref, 'sa_labs.analysis.entity.Feature'), refs));
@@ -257,6 +250,14 @@ classdef Group < sa_labs.analysis.entity.KeyValueEntity
 	    function addParameter(obj, property, value)
 	        % setParameters - set property, value pair to parameters
 	        obj.attributes(property) = value;
+	    end
+
+	    function data = getData(obj, features)
+	    	try
+	    	    data = [features.data];
+	    	catch exception
+	    	    data = {features.data};
+	    	end
 	    end
 	end
 end

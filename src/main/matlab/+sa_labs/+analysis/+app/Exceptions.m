@@ -13,7 +13,12 @@ classdef Exceptions < handle
         FEATURE_KEY_NOT_FOUND('getFeatureData:featureIdNotPresent', @(msg)['Feature Id ' msg ' is not found in the feature map'])
 
         INVALID_PROPERTY_PAIR('properties:invalid', @(msg) 'properties deos not have valid param value pair')
-        OVERWRIDING_FEATURE('overriding:oldfeature', @(msg) ['overriding old feature with new one for key [ ' msg ' ]']);
+        OVERWRIDING_FEATURE('overriding:oldfeature', @(msg) ['overriding old feature with new one for key [ ' msg ' ]'])
+
+        MULTIPLE_VALUE_FOUND('values:notunique',  @(msg) [msg ' has more than one unique value for group'])
+        DEVICE_NOT_PRESENT('device:notpresent', @(msg) ['device not present for feature group [ ' msg ' ] '] );
+
+
     end
     
     properties
