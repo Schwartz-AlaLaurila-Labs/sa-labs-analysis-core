@@ -112,18 +112,32 @@ classdef FeatureTreeBuilder < sa_labs.analysis.core.FeatureTreeFinder
                 && obj.isBasicEpochGroup(sourceGroup);
         end
 
-        function tf = didCollectParameters(obj, epochGroup)
+        function tf = didCollectEpochParameters(obj, epochGroup)
            t = obj.tree; 
            parentId = t.getparent(epochGroup.id);
            parentGroup = t.get(parentId);
            tf = ~ parentGroup.parametersCopied;
         end
 
-        function disableFurtherCollect(obj, epochGroup)
+        function disableFurtherCollectForEpochParameters(obj, epochGroup)
             t = obj.tree; 
             parentId = t.getparent(epochGroup.id);
             parentGroup = t.get(parentId);
             parentGroup.parametersCopied = true;
+        end
+
+        function tf = didCollectCellParameters(obj, epochGroup)
+           t = obj.tree; 
+           parentId = t.getparent(epochGroup.id);
+           parentGroup = t.get(parentId);
+           tf = ~ parentGroup.cellParametersCopied;
+        end
+
+        function disableFurtherCollectForCellParameter(obj, epochGroup)
+            t = obj.tree; 
+            parentId = t.getparent(epochGroup.id);
+            parentGroup = t.get(parentId);
+            parentGroup.cellParametersCopied = true;
         end
     end
     

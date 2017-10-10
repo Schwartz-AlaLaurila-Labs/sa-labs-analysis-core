@@ -12,7 +12,8 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
     
     properties (Hidden)
         epochIndices        % List of epoch indices to be processed in Offline analysis. @see CellData and FeatureExtractor.extract
-        parametersCopied    % Avoid redundant collection of parameters
+        parametersCopied     % Avoid redundant collection of epoch parameters
+        cellParametersCopied % Avoid redundant collection of cell parameters
     end
     
     methods
@@ -25,6 +26,7 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
             obj.splitParameter = splitParameter;
             obj.splitValue = splitValue;
             obj.parametersCopied = false;
+            obj.cellParametersCopied = false;
         end
 
         function p = getParameter(obj, key)

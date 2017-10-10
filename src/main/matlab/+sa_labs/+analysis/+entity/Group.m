@@ -31,6 +31,7 @@ classdef Group < sa_labs.analysis.entity.KeyValueEntity
 	            end
 	        end
 	        
+	        id = obj.makeValidKey(id);
 	        propertyMap('id') = id;
 	        description = entity.FeatureDescription(propertyMap);
 	        description.id = id;

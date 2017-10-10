@@ -131,124 +131,142 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
         
         function  testBuildTreeMutlipleLevelMultipleBranches(obj)
             import sa_labs.analysis.*;
-            expectedRoot = @(id) strcat('analysis==', id, '-', obj.recordingLabel);
-            % Tree with two level and two branch - analysis
-            levelOne = containers.Map({'LightStep_20', 'LightStep_500'}, {1 : 50, 51 : 100});
-            levelTwo = containers.Map({'Amplifier_Ch1', 'Amplifier_Ch2'}, {1 : 50, 1 : 50});
-            levelTwoOtherBranch = containers.Map({'Amplifier_Ch1', 'Amplifier_Ch2'}, {51 : 100, 51 : 100});
             
-            mockedCellData = Mock(entity.CellData());
-            mockedCellData.when.getEpochValuesMap(AnyArgs())...
-                .thenReturn(levelOne, 'EpochGroup')...
-                .thenReturn(levelTwo, 'deviceStream')...
-                .thenReturn(levelTwoOtherBranch, 'deviceStream');
-            
-            paramterNames = {'deviceStream', 'stimTime', 'rstars', 'ndfs'};
-            mockedCellData.when.getParamValues(AnyArgs())...
-                .thenReturn(paramterNames, {'Amplifier_Ch1', 20, [0.01, 0.1, 1], {'A1A', 'A2A', 'A3A'}})...
-                .thenReturn(paramterNames, {'Amplifier_Ch2', 20, [0.01, 0.1, 1], {'B1A', 'A2A', 'A3A'}})...
-                .thenReturn(paramterNames, {'Amplifier_Ch1', 500, [10, 5, 100], {'Empty', 'A2A', 'A3A'}})...
-                .thenReturn(paramterNames, {'Amplifier_Ch2', 500, [10, 5, 100], {'A1A', 'A2A', 'A3A'}});
-            
-            mockedCellData.when.getEpochKeysetUnion(AnyArgs())...
-                .thenReturn(paramterNames)...
-                .thenReturn(paramterNames);
-            
-            tree = obj.testAnalyze(obj.simpleAnalysisProtocol, mockedCellData);
-            actual = tree.treefun(@(node) node.name);
-            
-            expected = {expectedRoot('test-analysis'); 'EpochGroup==LightStep_20'; 'deviceStream==Amplifier_Ch1';'deviceStream==Amplifier_Ch2';...
-                'EpochGroup==LightStep_500'; 'deviceStream==Amplifier_Ch1';'deviceStream==Amplifier_Ch2'};
-            
-            obj.verifyEqual(actual.Node, expected);
-            leafs = tree.findleaves();
-            obj.verifyEqual(tree.get(leafs(1)).epochIndices, 1:50);
-            obj.verifyEqual(tree.get(leafs(2)).epochIndices, 1:50);
-            obj.verifyEqual(tree.get(leafs(3)).epochIndices, 51:100);
-            obj.verifyEqual(tree.get(leafs(4)).epochIndices, 51:100);
-            
-            expected = struct('stimTime', [20, 20], 'rstars', [0.01, 0.1, 1, 0.01, 0.1, 1]);
-            expected.deviceStream = {'Amplifier_Ch1', 'Amplifier_Ch2'};
-            % tree will have all the epoch parameters in the same epoch
-            % order
+            %    '                          analysis==test-analysis-c1 ( 1 )                           '
+            %    '                    +--------------------+---------------------+                     '
+            %    '                    |                                          |                     '
+            %    '          EpochGroup==G1 ( 2 )                       EpochGroup==G2 ( 7 )            '
+            %    '          +---------+----------+                    +---------+----------+           '
+            %    '          |                    |                    |                    |           '
+            %    ' stimTime==20 ( 3 )   stimTime==40 ( 5 )   stimTime==20 ( 8 )   stimTime==40 ( 10 )  '
+            %    '          |                    |                    |                                '
+            %    '          |                    |                    |                    |           '
+            %    ' devices==Amp1 ( 4 )  devices==Amp1 ( 6 )  devices==Amp1 ( 9 ) devices==Amp1 ( 11 )  '
 
-            expected.ndfs = {'A1A', 'A2A', 'A3A', 'B1A', 'A2A', 'A3A'};
+            structure = struct();
+            structure.type = 'test-analysis';
+            structure.buildTreeBy = {'EpochGroup', 'stimTime', 'devices'};
+            structure.devices.splitValue = {'Amp1'};
+            structure.featureManager = 'sa_labs.analysis.core.FeatureTreeManager';
             
-            actualParameters = tree.get(tree.getparent(leafs(1))).toStructure();
-            obj.verifyEqual(actualParameters, expected);
-            actualParameters = tree.get(tree.getparent(leafs(2))).toStructure();
-            obj.verifyEqual(actualParameters, expected);
+            epochs = entity.EpochData.empty(0, 8);
+            % epochs for Group (g1)
+            epochs(1) = entity.EpochData();
+            epochs(1).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 20, 'G1', 0.01});
+            epochs(1).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
             
-            expected.stimTime = [500, 500];
-            expected.rstars = [10, 5, 100, 10, 5, 100];
-            % tree will have all the epoch parameters in the same epoch
-            % order
-            % exception - if there is no variation it just gets the unique
-            % parameter
-            expected.ndfs = {'Empty', 'A2A', 'A3A', 'A1A', 'A2A', 'A3A'};
-            actualParameters = tree.get(tree.getparent(leafs(4))).toStructure();
-            obj.verifyEqual(actualParameters, expected);
-        end
-        
-        
-        function testBuildTreeComplex(obj)
-            import sa_labs.analysis.*;
+            epochs(2) = entity.EpochData();
+            epochs(2).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 20, 'G1', 0.02});
+            epochs(2).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
             
-            levelOne = containers.Map({'LightStep_20', 'LightStep_500'}, {1 : 50, 51 : 100});
+            epochs(3) = entity.EpochData();
+            epochs(3).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 40, 'G1', 0.03});
+            epochs(3).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
             
-            levelTwo = containers.Map({'Amplifier_Ch1', 'Amplifier_Ch2'}, {1 : 50,  1 : 25});
-            levelThree = containers.Map({'G1', 'G2'}, {1 : 25,  26 : 50});
-            levelThreeOtherBranch = containers.Map({'G1', 'G2', 'G3'}, {1 : 11,  12 : 22, 23: 25});
+            epochs(4) = entity.EpochData();
+            epochs(4).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 40, 'G1', 0.04});
+            epochs(4).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
             
-            leafGroupOne = containers.Map({0.01, 0.02}, {1 : 12, 13 : 25});
-            leafGroupTwo = containers.Map({0.01, 0.02}, {26 : 35, 36 : 50});
+            % epochs for Group (g2)
+            epochs(5) = entity.EpochData();
+            epochs(5).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 20, 'G2', 0.01});
+            epochs(5).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
             
-            leafGroupThree = containers.Map({0.01, 0.02}, {1 : 5, 6 : 11});
-            leafGroupFour = containers.Map({0.01, 0.02}, {12 : 17, 18 : 22});
-            leafGroupFive = containers.Map({0.01, 0.02}, {[23, 24], 25});
+            epochs(6) = entity.EpochData();
+            epochs(6).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 20, 'G2', 0.02});
+            epochs(6).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
             
-            mockedCellData = Mock(entity.CellData());
-            mockedCellData.when.getEpochValuesMap(AnyArgs())...
-                .thenReturn(levelOne, 'EpochGroup')...
-                .thenReturn(levelTwo, 'deviceStream')...
-                .thenReturn(levelThree, 'groups')...
-                .thenReturn(leafGroupOne, 'rstar')...
-                .thenReturn(leafGroupTwo, 'rstar')...
-                .thenReturn(levelThreeOtherBranch, 'groups')...
-                .thenReturn(leafGroupThree, 'rstar')...
-                .thenReturn(leafGroupFour, 'rstar')...
-                .thenReturn(leafGroupFive, 'rstar');
+            epochs(7) = entity.EpochData();
+            epochs(7).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 40, 'G2', 0.03});
+            epochs(7).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
             
-            mockedCellData.when.getParamValues(AnyArgs()).thenReturn({'deviceStream'}, {'Amplifier_Ch1'}).times(100);
-            mockedCellData.when.getEpochKeysetUnion(AnyArgs()).thenReturn({'deviceStream', 'stimTime'}).times(100);
+            epochs(8) = entity.EpochData();
+            epochs(8).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 40, 'G2', 0.04});
+            epochs(8).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
             
-            s = struct();
-            s.type = 'complex-analysis';
-            s.featureManager = 'sa_labs.analysis.core.FeatureTreeManager';
-            s.buildTreeBy = {'EpochGroup', 'deviceStream', 'epochgroups', 'rstar'};
-            s.EpochGroup.splitValue = 'LightStep_20';
-            s.deviceStream = {'Amplifier_Ch1', 'Amplifier_Ch2'};
-            s.epochgroups = {'G1', 'G2', 'G3'};
-            s.rstar = {0.01, 0.02};
-            
-            tree = obj.testAnalyze(s, mockedCellData);
-            
+            % Amplifier specific cell data
+            mockedCellData = entity.CellData();
+            mockedCellData.attributes('recordingLabel') = obj.recordingLabel;
+            mockedCellData.epochs = epochs;
+
+            tree = obj.testAnalyze(structure, mockedCellData);
+            disp('analysis tree')
+            tree.treefun(@(node) strcat(node.name, [' ( ' num2str(node.id), ' ) '])).tostring()
+
+
             leafs = tree.findleaves();
-            obj.verifyEqual(tree.get(leafs(1)).epochIndices, leafGroupOne(0.01));
-            obj.verifyEqual(tree.get(leafs(2)).epochIndices, leafGroupOne(0.02));
+            obj.verifyEqual(tree.get(leafs(1)).epochIndices, [1, 2]);
+            obj.verifyEqual(tree.get(leafs(2)).epochIndices, [3, 4]);
+            obj.verifyEqual(tree.get(leafs(3)).epochIndices, [5, 6]);
+            obj.verifyEqual(tree.get(leafs(4)).epochIndices, [7, 8]);
+
+            % Start of group = G1
+            % ----------------------------
             
-            obj.verifyEqual(tree.get(leafs(3)).epochIndices, leafGroupTwo(0.01));
-            obj.verifyEqual(tree.get(leafs(4)).epochIndices, leafGroupTwo(0.02));
+            % one level above the leaf (i.e stimTime == 20), expected parameters
+            expected1 = struct();
+            expected1.stimTime = [20, 20];
+            expected1.rstars = [0.01, 0.02];
+            expected1.EpochGroup = {'G1', 'G1'};
+            expected1.recordingLabel = 'c1';
             
-            obj.verifyEqual(tree.get(leafs(5)).epochIndices, leafGroupThree(0.01));
-            obj.verifyEqual(tree.get(leafs(6)).epochIndices, leafGroupThree(0.02));
+            actualParameters = tree.get(leafs(1)).toStructure();
+            obj.verifyEqual(actualParameters, expected1);
+            % since device is the leaf, parent should have same parameters
+            actualParameters = tree.get(tree.getparent(leafs(1))).toStructure();
+            obj.verifyEqual(actualParameters, expected1);
             
-            obj.verifyEqual(tree.get(leafs(7)).epochIndices, leafGroupFour(0.01));
-            obj.verifyEqual(tree.get(leafs(8)).epochIndices, leafGroupFour(0.02));
+            % one level above the leaf (i.e stimTime == 40), expected parameters
+            expected2 = struct();
+            expected2.stimTime = [40, 40];
+            expected2.rstars = [0.03, 0.04];
+            expected2.EpochGroup = {'G1', 'G1'};
+            expected2.recordingLabel = 'c1';
             
-            obj.verifyEqual(tree.get(leafs(9)).epochIndices, leafGroupFive(0.01));
-            obj.verifyEqual(tree.get(leafs(10)).epochIndices, leafGroupFive(0.02));
+            actualParameters = tree.get(leafs(2)).toStructure();
+            obj.verifyEqual(actualParameters, expected2);
+            % since device is the leaf, parent should have same parameters
+            actualParameters = tree.get(tree.getparent(leafs(2))).toStructure();
+            obj.verifyEqual(actualParameters, expected2);
+            
+            actualParameters = tree.get(tree.getparent(tree.getparent(leafs(2)))).toStructure();
+            expected3 = struct();
+            expected3.stimTime = [20, 20, 40, 40];
+            expected3.rstars = [0.01, 0.02, 0.03, 0.04];
+            expected3.EpochGroup = {'G1', 'G1', 'G1', 'G1'};
+            expected3.recordingLabel = 'c1';
+            obj.verifyEqual(actualParameters, expected3);
+
+            % End of group = G1
+            % ----------------------------
+
+            % Start of group = G2
+            % ----------------------------
+
+            % one level above the leaf (i.e stimTime == 20), expected parameters
+            expected1.EpochGroup = {'G2', 'G2'};
+            actualParameters = tree.get(leafs(3)).toStructure();
+            obj.verifyEqual(actualParameters, expected1);
+            % since device is the leaf, parent should have same parameters
+            actualParameters = tree.get(tree.getparent(leafs(3))).toStructure();
+            obj.verifyEqual(actualParameters, expected1);
+
+            % one level above the leaf (i.e stimTime == 40), expected parameters
+            expected2.EpochGroup = {'G2', 'G2'};
+            actualParameters = tree.get(leafs(4)).toStructure();
+            obj.verifyEqual(actualParameters, expected2);
+            % since device is the leaf, parent should have same parameters
+            actualParameters = tree.get(tree.getparent(leafs(4))).toStructure();
+            obj.verifyEqual(actualParameters, expected2);
+            
+            expected3.EpochGroup = {'G2', 'G2', 'G2', 'G2'};
+            actualParameters = tree.get(tree.getparent(tree.getparent(leafs(4)))).toStructure();
+            obj.verifyEqual(actualParameters, expected3);
+
+            % End of group = G2
+            % ----------------------------
         end
+        
         
         function testBuildTreeWithGroupedBranches(obj)
             import sa_labs.analysis.*;
@@ -305,7 +323,7 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             
             mockedCellData.when.getParamValues(AnyArgs()).thenReturn({'deviceStream'}, {'Amplifier_Ch1'}).times(100);
             mockedCellData.when.getEpochKeysetUnion(AnyArgs()).thenReturn({'deviceStream', 'stimTime'}).times(100);
-            
+            mockedCellData.deviceType = 'Amplifier_Ch1';
             analysisProtocol = core.AnalysisProtocol(s);
             offlineAnalysis = core.OfflineAnalysis(analysisProtocol, obj.recordingLabel);
             offlineAnalysis.setEpochSource(mockedCellData);
@@ -379,6 +397,7 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             
             mockedCellData.when.getParamValues(AnyArgs()).thenReturn({'deviceStream'}, {'Amplifier_Ch1'}).times(100);
             mockedCellData.when.getEpochKeysetUnion(AnyArgs()).thenReturn({'deviceStream', 'stimTime'}).times(100);
+            mockedCellData.deviceType = 'Amplifier_Ch1';
             
             result = obj.testAnalyze(s, mockedCellData);
             leafs = result.findleaves();
@@ -422,6 +441,7 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             driftingTextureAngle = containers.Map({'10', '20', '30'}, {101 : 115,  116 : 130, 131 : 150});
             
             mockedCellData = createMockedData();
+            mockedCellData.deviceType = 'Amplifier_Ch1';
             result = obj.testAnalyze(s, mockedCellData);
             
             leafs = result.findleaves();

@@ -92,19 +92,22 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
             % parameter' is 'devices' although it has multiple split values
             % Issue https://github.com/Schwartz-AlaLaurila-Labs/sa-labs-analysis-core/issues/5
 
-            if obj.featureBuilder.didCollectParameters(epochGroup)
+            if obj.featureBuilder.didCollectEpochParameters(epochGroup)
                 
                 ids = [epochGroup.id];
                 obj.log.trace('collecting epoch parameters ...');
                 obj.featureBuilder.collect(ids, keySet, keySet);
+            end
 
+            if obj.featureBuilder.didCollectCellParameters(epochGroup)
                 obj.log.trace('collecting cell parameters ...');
                 cellKeySet = obj.cellData.getPropertyMap().keys;
                 obj.featureBuilder.collect([epochGroup.id], cellKeySet, cellKeySet);
+                obj.featureBuilder.disableFurtherCollectForCellParameter(epochGroup);
             end
             
             if obj.isEpochGroupSplitByDevice(epochGroup)
-                obj.featureBuilder.disableFurtherCollect(epochGroup);
+                obj.featureBuilder.disableFurtherCollectForEpochParameters(epochGroup);
             end
         end
     end
@@ -154,15 +157,23 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
             data = obj.cellData;
             
             for i = 1 : numel(epochGroups)
-                [p, v] = data.getParamValues(epochGroups(i).epochIndices);
+                group = epochGroups(i);
+                [p, v] = data.getParamValues(group.epochIndices);
                 
                 if isempty(p)
-                    obj.log.warn(['no epoch parameter found for given node ' num2str(epochGroups(i).id)]);
+                    obj.log.warn(['no epoch parameter found for given node ' num2str(group.id)]);
                     continue;
                 end
-                epochGroups(i).setParameters(containers.Map(p, v));
-                epochGroups(i).setParameters(data.getPropertyMap());
-                obj.log.trace(['setting epoch parameter for ' epochGroups(i).name ]);
+                % Set all the epoch parameters
+                group.setParameters(containers.Map(p, v));
+                group.setParameters(data.getPropertyMap());
+                % Set the active amplifier channel
+                device = obj.getDeviceForGroup(group);
+                group.device = device;
+                % Add all the epoch specific feature in the group
+                group.populateEpochResponseAsFeature(data.epochs(group.epochIndices));
+                obj.log.trace(['setting epoch parameter for ' group.name ' having device [ ' device ' ]']);
+
             end
         end
         
