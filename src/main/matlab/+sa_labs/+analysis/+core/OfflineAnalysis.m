@@ -48,9 +48,8 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
             
             for pathIndex = 1 : obj.analysisProtocol.numberOfPaths()
                 numberOfEpochs = numel(data.epochs);
-                epochGroup = sa_labs.analysis.entity.EpochGroup(1 : numberOfEpochs, data.recordingLabel);
                 parameters = obj.analysisProtocol.getSplitParametersByPath(pathIndex);
-                obj.add(obj.DEFAULT_ROOT_ID, epochGroup, parameters);
+                obj.add(obj.DEFAULT_ROOT_ID, 1 : numberOfEpochs, parameters);
             end
             obj.featureBuilder.curateDataStore();
             
@@ -112,11 +111,11 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
     
     methods (Access = private)
         
-        function add(obj, parentId, epochGroup, params)
+        function add(obj, parentId, epochIndices, params)
             splitBy = params{1};
             data = obj.cellData;
             
-            [epochValueMap, filter] = data.getEpochValuesMap(obj.analysisProtocol.getValidSplitParameter(splitBy), epochGroup.epochIndices);
+            [epochValueMap, filter] = data.getEpochValuesMap(obj.analysisProtocol.getValidSplitParameter(splitBy), epochIndices);
             
             if isempty(epochValueMap)
                 obj.log.warn([' splitBy paramter [ ' splitBy ' ] is not found !']);
@@ -145,7 +144,7 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
                 [id, featureGroup] = obj.featureBuilder.addFeatureGroup(parentId, splitBy, splitValue, epochIndices);
                 
                 if length(params) > 1
-                    obj.add(id, epochGroup, params(2 : end));
+                    obj.add(id, epochIndices, params(2 : end));
                 end
                 obj.copyEpochParameters(featureGroup);
             end

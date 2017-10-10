@@ -35,8 +35,6 @@ classdef FeatureGroupTest < matlab.unittest.TestCase
             epochs(2).addDerivedResponse('spikes', 11 : 15, 'Amp1');
             epochs(2).addDerivedResponse('spikes', 16 : 20, 'Amp2');
 
-            epochGroup = entity.EpochGroup([1,2], 'some filter', 'name', epochs);
-
             featureGroup = entity.FeatureGroup('test', 'param');
             featureGroup.device = 'Amp1';
             featureGroup.populateEpochResponseAsFeature(epochs);
