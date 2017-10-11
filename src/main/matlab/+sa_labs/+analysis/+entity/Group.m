@@ -169,14 +169,6 @@ classdef Group < sa_labs.analysis.entity.KeyValueEntity
 	        elseif obj.isFeatureEntity(new)
 	            new = [new{:}];
 	        end
-	        
-	        try
-	            % helps to check if the parameter has any mixed type
-	            % TODO : find alternative way
-	            unique(new, 'stable'); 
-	        catch e
-	            warning('mixedType:parameters', e.message);
-	        end
 	        obj.addParameter(key, new);
 	    end
 	    

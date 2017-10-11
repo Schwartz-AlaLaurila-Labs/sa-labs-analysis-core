@@ -1,7 +1,7 @@
 classdef EpochGroup < sa_labs.analysis.entity.Group
     
     properties
-        id                  % Identifier of the epochGroup, assigned by NodeManager @see NodeManager.addEpochGroup
+        id                  % Identifier of the epochGroup, assigned by FeatureTreeBuilder @see FeatureTreeBuilder.addEpochGroup
         device              % Amplifier channel name Eg 'Amp1'
     end
     
@@ -59,9 +59,33 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
         end
 
         function data = getFeatureData(obj, key)
+            
+            % Given the key, it tries to fetch the exact (or) nearest feature 
+            % match using regular expression. As a next step, it formats the 
+            % data on following order
+            %
+            %   a) In case of array of same size, it concats horizontally
+            %   b) In case of array of different size, it creates a cell 
+            %      array and concats horizontally
+            %   c) special case: if the key is the nearest match rather 
+            %      actual key, then it creates the 1d (or) 2d cell array
+            %      depends on the actual data 
+            %      
+            %      Example a): Assume 'f1' = 8 x 2, 'f2' = 8 x 2
+            %      obj.getFeatureData('f') results in following 
+            %      [8 x 2] [8 x 2] (i.e 1 × 2 cell array )     
+            %
+            %      Example b) Assume  f1, f2 are 1 × 2 cell array each
+            %      'f1' = [3 x 1, 5 x 1] 'f2' = [4 x 1, 2 x 1]
+            %      obj.getFeatureData('f') results in following 
+            %      [3 x 1] [4 x 1]      
+            %      [5 x 1] [2 x 1]  (i.e  2 × 2 cell array)
+
+             
             import sa_labs.analysis.*;
 
             data = getFeatureData@sa_labs.analysis.entity.Group(obj, key);
+
             if isempty(data)
                 [~, features] = util.collections.getMatchingKeyValue(obj.featureMap, key);
                 
@@ -69,12 +93,33 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
                     app.Exceptions.FEATURE_KEY_NOT_FOUND.create('warning', true)
                     return
                 end
-                data = obj.getData([features{:}]);
+                
+                % data format logic
+                data = {};
+                for featureCell = each(features)
+                    d = obj.getData(featureCell);
+                    
+                    if ~ iscell(d)
+                        d = {d};
+                    end
+                    
+                    if size(d, 1) == 1
+                       d = d';
+                    end
+                    data{end + 1} = d; %#ok <AGROW>
+                end
+                if all(cellfun(@iscell, data))
+                    try
+                        data =  [data{:}];
+                    catch
+                        % do nothing
+                    end
+                end
             end
         end
 
         function tf = hasDevice(obj, key)
-            tf = any(strfind(upper(key), upper(obj.device)));
+            tf = ~ isempty(strfind(upper(key), upper(obj.device))); %#ok
         end
 
         function key = makeValidKey(obj, key)

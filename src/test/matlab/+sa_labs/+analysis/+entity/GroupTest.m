@@ -70,8 +70,7 @@ classdef GroupTest < matlab.unittest.TestCase
             obj.verifyEqual(group.get('new'), {'param1', 'param2', 'param3', 'param4'});
             
             % append mixed data type with out error
-            handle = @()group.appendParameter('epochId', '5');
-            obj.verifyWarning(handle, 'mixedType:parameters');
+            group.appendParameter('epochId', '5');
             obj.verifyEqual(group.get('epochId'), {[1, 2, 3], '5'});
             
             % Testing 1d array in parameters

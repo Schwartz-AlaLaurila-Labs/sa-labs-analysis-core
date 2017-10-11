@@ -27,24 +27,35 @@ classdef EpochGroupTest < matlab.unittest.TestCase
             epochs(1).dataLinks = containers.Map({'Amp1', 'Amp2' }, {'response1', 'response2'});
             epochs(1).responseHandle = @(arg) struct('quantity', [1:10]);
             epochs(1).addDerivedResponse('spikes', 1 : 5, 'Amp1');
-            epochs(1).addDerivedResponse('spikes', 6 : 10, 'Amp2');
+            epochs(1).addDerivedResponse('spikes', 1 : 8, 'Amp2');
 
             epochs(2) = entity.EpochData();
             epochs(2).dataLinks = containers.Map({'Amp1', 'Amp2' }, {'response1', 'response2'});
             epochs(2).responseHandle = @(arg) struct('quantity', [11:20]);
-            epochs(2).addDerivedResponse('spikes', 11 : 15, 'Amp1');
-            epochs(2).addDerivedResponse('spikes', 16 : 20, 'Amp2');
+            epochs(2).addDerivedResponse('spikes', 1 : 3, 'Amp1');
+            epochs(2).addDerivedResponse('spikes', 1 : 6, 'Amp2');
 
             epochGroup = entity.EpochGroup('test', 'param');
             epochGroup.device = 'Amp1';
             epochGroup.populateEpochResponseAsFeature(epochs);
             obj.verifyEqual(epochGroup.getFeatureData('AMP1_EPOCH'), [(1:10)', (11:20)']);
-            obj.verifyEqual(epochGroup.getFeatureData('AMP1_SPIKES'), [(1:5)', (11:15)']);
+            obj.verifyEqual(epochGroup.getFeatureData('AMP1_SPIKES'), {(1:5)', (1:3)'});
             
             epochGroup.device = 'Amp2';
             epochGroup.populateEpochResponseAsFeature(epochs);
             obj.verifyEqual(epochGroup.getFeatureData('AMP2_EPOCH'), [(1:10)', (11:20)']);
-            obj.verifyEqual(epochGroup.getFeatureData('AMP2_SPIKES'), [(6:10)', (16:20)']);
+            obj.verifyEqual(epochGroup.getFeatureData('AMP2_SPIKES'), {(1:8)', (1:6)'});
+            
+            epochGroup.device = '';
+            % epochs are of same size
+            obj.verifyEqual(epochGroup.getFeatureData('EPOCH'),...
+                 {[(1:10)', (11:20)'],...  % belongs to first epoch
+                  [(1:10)', (11:20)']});   % belongs to second epoch
+
+            % spikes are of different size
+            obj.verifyEqual(epochGroup.getFeatureData('SPIKES'),...
+                 { (1:5)', (1:8)';...
+                   (1:3)', (1:6)' });
         end
     end    
 end

@@ -68,11 +68,18 @@ classdef Feature < handle & matlab.mixin.Heterogeneous
     methods (Access = private)
         
         function data = formatData(obj, data)
+            
             if ischar(data)
                 data = cellstr(data);
+                return
             end
+            % if its more than one dimension wrap in a cell array
+            if all(size(data) > 1)
+                data = {data};
+                return
+            end 
+            
             data = obj.columnMajor(data);
-
             factor = obj.description.downSampleFactor;
             if ~ isempty(factor) && ~ iscell(data) && ~ obj.downSampled
                 data = downsample(data, factor);
@@ -80,7 +87,7 @@ classdef Feature < handle & matlab.mixin.Heterogeneous
             end
         end
 
-        function data = columnMajor(obj, data)
+        function data = columnMajor(~, data)
             [rows, columns] = size(data);
             
             if rows == 1 && columns > 1
@@ -88,7 +95,7 @@ classdef Feature < handle & matlab.mixin.Heterogeneous
             end
         end
 
-        function data = rowMajor(obj, data)
+        function data = rowMajor(~, data)
             [rows, columns] = size(data);
             
             if rows > 1 && columns == 1
