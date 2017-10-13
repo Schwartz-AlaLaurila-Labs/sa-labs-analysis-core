@@ -6,7 +6,6 @@ classdef Group < sa_labs.analysis.entity.KeyValueEntity
 
     properties(SetAccess = private)
         name 		% Descriptive name of the Abstract Group
-        uuid 
     end
     
     methods 

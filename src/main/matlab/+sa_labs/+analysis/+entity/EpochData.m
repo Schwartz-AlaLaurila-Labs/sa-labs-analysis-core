@@ -2,6 +2,11 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
     
     properties
         parentCell            % parent cell
+        excluded              % soft delete epoch  
+    end
+
+    properties (Transient)
+        filtered              % used to filter epochs from GUI  
     end
     
     properties (Hidden)
@@ -16,6 +21,8 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
             obj.attributes = containers.Map();
             obj.dataLinks = containers.Map();
             obj.derivedAttributes = containers.Map();
+            obj.excluded = false;
+            obj.filtered = true;
         end
         
         function v = get(obj, key)

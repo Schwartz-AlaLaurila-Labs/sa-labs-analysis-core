@@ -107,6 +107,20 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             dao.saveProject(project);
             obj.log.info(['Project created under location [ ' strrep(project.file, '\', '/') ' ]' ]);
         end
+
+        function d = getParsedCellData(obj, pattern)
+            dao = obj.analysisDao;
+            [parsedExperiments, unParsedExperiments] = obj.getParsedAndUnParsedFiles(project.experimentList);
+            
+            for unParsedExp = each(unParsedExperiments)
+                obj.parseSymphonyFiles(unParsedExp);
+                parsedExperiments{end + 1} = unParsedExp; %#ok <AGROW>
+            end
+            
+            d = linq(dao.findCellNames(parsedExperiments))...
+                .select(@(name) dao.findCell(name))...
+                .where(@(d) isempty(d.get('recordingLabel'))).toArray();
+        end
         
         function preProcess(obj, cellDatas, functions, varargin)
             

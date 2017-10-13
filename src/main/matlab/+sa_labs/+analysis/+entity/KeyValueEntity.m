@@ -3,8 +3,16 @@ classdef KeyValueEntity < handle & matlab.mixin.CustomDisplay
     properties
         attributes
     end
+
+    properties(SetAccess = protected)
+        uuid
+    end
     
     methods
+
+        function obj = KeyValueEntity()
+            obj.uuid = char(java.util.UUID.randomUUID);
+        end
         
         function [parameter, description] = getKeyAsFunctionHandle(obj, inputParameter) %#ok
             
