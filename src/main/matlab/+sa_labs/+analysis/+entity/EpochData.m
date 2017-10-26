@@ -12,7 +12,7 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
     properties (Hidden)
         dataLinks             % Map with keys as Amplifier device and values as responses
         responseHandle        % amplifere response call back argumet as stream name
-        derivedAttributes     % like spikes and other epoch specific pre-processed data  
+        derivedAttributes     % spikes and other epoch specific pre-processed data  
     end
     
     methods

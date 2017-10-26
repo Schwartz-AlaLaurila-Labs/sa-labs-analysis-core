@@ -122,16 +122,16 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
                 .where(@(d) isempty(d.get('recordingLabel'))).toArray();
         end
         
-        function preProcess(obj, cellDatas, functions, varargin)
+        function preProcessCellData(obj, cellDatas, functions, varargin)
             
-            % preproces - apply list of functions to list of cellDatas
+            % preProcessCellData - apply list of functions to list of cellDatas
             % and serializes the results to disk for later lookup
             %
             % One can control the list of functions to be applied by
             % using boolean array parameter 'enabled' @see usage
             %
-            % usage : obj.preProcess(cellData,{@(d) fun1(d), @(d) fun2(d) })
-            %         obj.preProcess(cellData,{@(d) fun1(d), @(d) fun2(d) }, 'enabled', [true, true])
+            % usage : obj.preProcessCellData(cellData,{@(d) fun1(d), @(d) fun2(d) })
+            %         obj.preProcessCellData(cellData,{@(d) fun1(d), @(d) fun2(d) }, 'enabled', [true, true])
             %
             
             n = numel(functions);
@@ -141,17 +141,33 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             enabled = ip.Results.enabled;
             
             for data = each(cellDatas)
-                
-                for fun = each(functions(enabled))
-                    obj.log.info(['pre processing data [ ' data.recordingLabel ' ] for function [ ' char(fun) ' ] ']);
-                    try
-                        fun(data);
-                    catch exception
-                        disp(getReport(exception, 'extended', 'hyperlinks', 'on'));
-                        obj.log.error(exception.message);
-                    end
-                end
+                obj.log.info(['pre processing data [ ' data.recordingLabel ' ] ']);                
+                obj.preProcess(functions(enabled), data);
                 obj.analysisDao.saveCell(data);
+            end
+        end
+
+        function preProcessEpochData(obj, epochDatas, functions, varargin)
+            % preProcessEpochData - apply list of functions to list of epochData
+            % and serializes the results to disk for later lookup
+            %
+            % One can control the list of functions to be applied by
+            % using boolean array parameter 'enabled' @see usage
+            %
+            % usage : obj.preProcessEpochData(epochDatas,{@(d) fun1(d), @(d) fun2(d) })
+            %         obj.preProcessEpochData(epochDatas,{@(d) fun1(d), @(d) fun2(d) }, 'enabled', [true, true])
+            %
+            
+            n = numel(functions);
+            ip = inputParser;
+            ip.addParameter('enabled', ones(1, n), @islogical);
+            ip.parse(varargin{:});
+            enabled = ip.Results.enabled;
+            
+            for data = each(epochDatas)
+                obj.log.info(['pre processing data [ ' data.recordingLabel ' ] with epoch number [' num2str(data.get('epochNumber')) ']' ]);                
+                obj.preProcess(functions(enabled), data);
+                obj.analysisDao.saveCell(data.parentCell);
             end
         end
         
@@ -282,6 +298,18 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             if isempty(file)
                 obj.log.error(['raw data file [ ' char(cellData.h5File) ' ] not found']);
                 throw(app.Exceptions.NO_RAW_DATA_FOUND.create('message', char(file)));
+            end
+        end
+
+        function preProcess(obj, data, functions)
+            for fun = each(functions)
+                obj.log.info(['pre processing data for function [ ' char(fun) ' ] ']);
+                try
+                    fun(data);
+                catch exception
+                    disp(getReport(exception, 'extended', 'hyperlinks', 'on'));
+                    obj.log.error(exception.message);
+                end
             end
         end
         
