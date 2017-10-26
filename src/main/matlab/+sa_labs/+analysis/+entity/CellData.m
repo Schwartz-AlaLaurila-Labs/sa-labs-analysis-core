@@ -16,10 +16,6 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
     
     methods
         
-        function obj = CellData()
-            obj.attributes = containers.Map();
-        end
-        
         function [values, parameterDescription] = getEpochValues(obj, parameter, epochIndices)
             
             % getEpochValues - By deafult returns attribute values of epochs

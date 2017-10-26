@@ -18,7 +18,6 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
     methods
 
         function obj = EpochData()
-            obj.attributes = containers.Map();
             obj.dataLinks = containers.Map();
             obj.derivedAttributes = containers.Map();
             obj.excluded = false;

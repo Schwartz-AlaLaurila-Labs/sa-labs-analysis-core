@@ -10,8 +10,12 @@ classdef KeyValueEntity < handle & matlab.mixin.CustomDisplay
     
     methods
 
-        function obj = KeyValueEntity()
+        function obj = KeyValueEntity(attributes)
+            if nargin < 1
+                attributes = containers.Map();
+            end
             obj.uuid = char(java.util.UUID.randomUUID);
+            obj.attributes = attributes;
         end
         
         function [parameter, description] = getKeyAsFunctionHandle(obj, inputParameter) %#ok
