@@ -162,7 +162,14 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
                 epochIndices = 1 : numel(obj.epochs);
             end
             [params, vals] = obj.getNonMatchingParamValues(excluded, epochIndices);
-            vals = cellfun(@(val) unique(val, 'stable'), vals, 'UniformOutput', false);
+            for i = 1 : numel(vals)
+                try
+                val = unique(vals{i}, 'stable');
+                vals{i} = val;
+                catch e %#ok
+                    % dont perform unique & use the same value
+                end
+            end
         end
 
         function [params, vals] = getParamValues(obj, epochIndices)

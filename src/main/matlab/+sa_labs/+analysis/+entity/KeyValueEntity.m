@@ -114,7 +114,14 @@ classdef KeyValueEntity < handle & matlab.mixin.CustomDisplay
                 
                 display = struct();
                 for i = 1 : numel(attrKeys)
-                    values = unique(obj.attributes(attrKeys{i}));
+                    
+                    values = obj.attributes(attrKeys{i});
+                    try
+                    values = unique(values);
+                    catch 
+                        % do nothing if couldnt convert to uniqe
+                    end
+                    
                     if ~ isempty(values)
                         if numel(values) == 1
                             display.(attrKeys{i}) = values;
@@ -124,7 +131,7 @@ classdef KeyValueEntity < handle & matlab.mixin.CustomDisplay
                     end
                 end
                 groups(1) = display;
-            catch
+            catch 
                 groups = getPropertyGroups@matlab.mixin.CustomDisplay(obj);
             end
         end
