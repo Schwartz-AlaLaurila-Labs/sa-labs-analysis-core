@@ -110,7 +110,7 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
 
         function d = getParsedCellData(obj, pattern)
             dao = obj.analysisDao;
-            [parsedExperiments, unParsedExperiments] = obj.getParsedAndUnParsedFiles(project.experimentList);
+            [parsedExperiments, unParsedExperiments] = obj.getParsedAndUnParsedFiles(cellstr(pattern));
             
             for unParsedExp = each(unParsedExperiments)
                 obj.parseSymphonyFiles(unParsedExp);
@@ -119,7 +119,7 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             
             d = linq(dao.findCellNames(parsedExperiments))...
                 .select(@(name) dao.findCell(name))...
-                .where(@(d) isempty(d.get('recordingLabel'))).toArray();
+                .where(@(d) ~ isempty(d.get('recordingLabel'))).toArray();
         end
         
         function preProcessCellData(obj, cellDatas, functions, varargin)
@@ -165,9 +165,9 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             enabled = ip.Results.enabled;
             
             for data = each(epochDatas)
-                obj.log.info(['pre processing data [ ' data.recordingLabel ' ] with epoch number [' num2str(data.get('epochNumber')) ']' ]);                
+                obj.log.info(['pre processing data with epoch number [' num2str(data.get('epochNumber')) ']' ]);                
                 obj.preProcess(functions(enabled), data);
-                obj.analysisDao.saveCell(data.parentCell);
+                %obj.analysisDao.saveCell(data.parentCell);
             end
         end
         
@@ -283,6 +283,10 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             finder = obj.analysisFactory.createFeatureFinder('project', name,...
                 'data', results);
         end
+
+        function filters = getCellDataFilters(obj)
+            filters = [];
+        end
     end
     
     methods (Access = private)
@@ -301,7 +305,7 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             end
         end
 
-        function preProcess(obj, data, functions)
+        function preProcess(obj, functions, data)
             for fun = each(functions)
                 obj.log.info(['pre processing data for function [ ' char(fun) ' ] ']);
                 try
