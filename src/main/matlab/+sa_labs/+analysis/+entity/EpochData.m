@@ -7,6 +7,7 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
 
     properties (Transient)
         filtered              % used to filter epochs from GUI  
+        inMemoryAttributes
     end
     
     properties (Hidden)
@@ -88,6 +89,20 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
             obj.derivedAttributes(id) = data;
         end
 
+        function addDerivedResponseInMemory(obj, key, data, device)
+            if nargin < 4
+                device = obj.getDefaultDeviceType();
+            end
+            obj.validateDevice(device);
+            
+            id = strcat(device, '_', key);
+            
+            if isempty(obj.inMemoryAttributes)
+                obj.inMemoryAttributes = containers.Map();
+            end
+            obj.inMemoryAttributes(id) = data;
+        end
+
         function r = getDerivedResponse(obj, key, device)
             
             if nargin < 3
@@ -97,8 +112,14 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
 
             r = [];
             id = strcat(device, '_', key);
+            
             if isKey(obj.derivedAttributes, id)
                r = obj.derivedAttributes(id);
+               return;
+            end 
+
+            if ~ isempty(obj.inMemoryAttributes) && isKey(obj.inMemoryAttributes, id)
+               r = obj.inMemoryAttributes(id);
             end 
         end
     end
