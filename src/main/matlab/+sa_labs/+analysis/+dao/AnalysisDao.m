@@ -6,7 +6,7 @@ classdef AnalysisDao < handle
         findRawDataFiles(obj, regexp)
         saveCell(obj, cellData)
         findCell(obj, cellName)
-        findCellNames(obj, regexp)
+        findCellNames(obj, regexp, isCellDataByAmp)
         saveAnalysisResults(obj, resultId, result, protocol)
         findAnalysisResult(obj, regexp)
     end

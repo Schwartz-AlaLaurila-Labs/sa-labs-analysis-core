@@ -75,11 +75,17 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
             save(path, 'cellData');
         end
         
-        function names = findCellNames(obj, pattern)
+        function names = findCellNames(obj, pattern, isCellDataByAmp)
+            
+            if nargin < 3
+                isCellDataByAmp = false;
+            end
+
             names = [];
             if isempty(pattern)
                 return;
             end
+            
             if ~ iscellstr(pattern)
                 pattern = obj.repository.dateFormat(pattern);
                 pattern = {[pattern '*c']};
@@ -91,8 +97,19 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
                 fnames = arrayfun(@(d) {d.name(1 : end-4)}, info);
                 names = [fnames; names];
             end
+            
+            if isempty(names)
+                return
+            end
+            
+            indices = cellfun(@(name) any(strfind(name, '_Amp')), names);
+            if isCellDataByAmp
+                names = names(indices);
+            else
+                names = names(~indices);
+            end
         end
-        
+
         function cellData = findCell(obj, cellName)
             pathFun = @(cellName) [obj.repository.analysisFolder filesep 'cellData' filesep cellName '.mat'];
             result = load(pathFun(cellName));

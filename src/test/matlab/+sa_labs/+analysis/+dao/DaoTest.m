@@ -162,6 +162,13 @@ classdef DaoTest < matlab.unittest.TestCase
             expected = {[datestr(now, obj.DATE_FORMAT) obj.FILE_PREFIX '2']; [datestr(now, obj.DATE_FORMAT) obj.FILE_PREFIX '3']};
             actual = dao.findCellNames(expected);
             obj.verifyEmpty(setdiff(expected, actual));
+            
+            % Test for Amp extension cell data names
+            names = dao.findCellNames(cellstr('cluster-c1'), true);
+            obj.verifyEqual(names, cellstr('cluster-c1_Amp1'));
+            
+            names = dao.findCellNames(cellstr('cluster-c1'));
+            obj.verifyEqual(names, cellstr('cluster-c1'));
         end
         
         function testFindCell(obj)
