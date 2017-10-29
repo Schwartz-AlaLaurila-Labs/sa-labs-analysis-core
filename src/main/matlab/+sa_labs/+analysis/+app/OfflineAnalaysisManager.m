@@ -165,8 +165,8 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             enabled = ip.Results.enabled;
             
             for data = each(epochDatas)
-                obj.log.info(['pre processing data with epoch number [' num2str(data.get('epochNum')) ']' ]);                
                 obj.preProcess(functions(enabled), data);
+                obj.log.info(['pre processing done for epoch number [' num2str(data.get('epochNum')) ']' ]);                
                 obj.analysisDao.saveCell(data.parentCell);
             end
         end
