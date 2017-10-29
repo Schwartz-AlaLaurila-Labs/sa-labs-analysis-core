@@ -147,6 +147,23 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             end
         end
 
+        function updatedCells = deleteEpochFromCells(obj, cellDatas)
+            updatedCells = [];
+            for cellData = each(cellDatas)
+                epochs = cellData.epochs;
+                indices = 1 : numel(epochs);
+                excludedIndices = linq(indices).where(@(i) epochs(i).excluded).toArray();
+                
+                if ~ isempty(excludedIndices)
+                    validIndices  = ~ ismember(indices, excludedIndices);
+                    cellData.epochs = epochs(validIndices);
+                    obj.analysisDao.saveCell(cellData);
+                    obj.log.info(['Deleted excluded epochs for [ ' cellData.recordingLabel ' ] ']);
+                    updatedCells = [updatedCells, cellData]; %#ok
+                end
+            end
+        end
+        
         function preProcessEpochData(obj, epochDatas, functions, varargin)
             % preProcessEpochData - apply list of functions to list of epochData
             % and serializes the results to disk for later lookup
