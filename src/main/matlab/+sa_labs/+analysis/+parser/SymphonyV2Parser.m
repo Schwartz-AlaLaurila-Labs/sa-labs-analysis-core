@@ -94,7 +94,7 @@ classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
                 parameterMap = obj.buildAttributes(h5Epochs(index).Groups(2), parameterMap);
                 parameterMap('epochNum') = i;
                 parameterMap('epochStartTime') = sortedEpochTime(i);
-                parameterMap('epochTime') = double(epochsTime(index));
+                parameterMap('epochTime') = util.dotnetTicksToDateTime(epochsTime(index));
                 
                 e = entity.EpochData();
                 e.parentCell = cell;
