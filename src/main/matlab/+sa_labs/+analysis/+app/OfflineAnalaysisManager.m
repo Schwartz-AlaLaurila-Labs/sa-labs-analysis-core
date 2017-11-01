@@ -300,9 +300,20 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             finder = obj.analysisFactory.createFeatureFinder('project', name,...
                 'data', results);
         end
-
-        function filters = getCellDataFilters(obj)
-            filters = [];
+        
+        function saveCellDataFilter(obj, name, filterTable)
+            obj.analysisDao.saveCellDataFilter(name, filterTable);
+        end
+        
+        function filterMap = getCellDataFilters(obj)
+            filterMap = obj.analysisDao.getCellDataFilters();
+        end
+        
+        function saveCellData(obj, entities)
+            if isa(entities, 'sa_labs.analysis.entity.EpochData')
+                entities = linq(entities).select(@(e) e.parentCell).toArray();
+            end
+            arrayfun(@(e) obj.analysisDao.saveCell(e), entities);
         end
     end
     

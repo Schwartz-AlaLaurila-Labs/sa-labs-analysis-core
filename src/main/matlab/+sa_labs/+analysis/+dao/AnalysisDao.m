@@ -9,6 +9,8 @@ classdef AnalysisDao < handle
         findCellNames(obj, regexp, isCellDataByAmp)
         saveAnalysisResults(obj, resultId, result, protocol)
         findAnalysisResult(obj, regexp)
+        saveCellDataFilter(obj, filterTable)
+        getCellDataFilters(obj)
     end
     
 end

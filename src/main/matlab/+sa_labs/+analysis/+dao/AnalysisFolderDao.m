@@ -155,6 +155,29 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
             r = load(path);
             result = r.result;
         end
+        
+        function saveCellDataFilter(obj, filterName, filterTable)
+            dir = [obj.repository.analysisFolder filesep 'filters' filesep 'cellData' filesep];
+            if ~ exist(dir, 'dir')
+                mkdir(dir);
+            end
+            save([dir filterName], 'filterTable');
+        end
+        
+        function filterMap = getCellDataFilters(obj)
+            filterMap = [];
+            directory = [obj.repository.analysisFolder filesep 'filters' filesep 'cellData' filesep];
+            if ~ exist(directory, 'dir')
+                return;
+            end
+            info = dir([directory '*.mat']);
+            fnames = arrayfun(@(d) {d.name(1 : end-4)}, info);
+            filterMap = containers.Map();
+            for name = each(fnames)
+                filter = load([directory  name '.mat']);
+                filterMap(name) = filter.filterTable;
+            end
+        end
     end
 
 end
