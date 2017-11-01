@@ -149,12 +149,12 @@ classdef OfflineAnalysisManagerTest < matlab.unittest.TestCase
 
         function testPreprocess(obj)
             cellDatas = obj.mockedCellData('test.h5', {'c1', 'c2'});
-            obj.manager.preProcess(cellDatas, {@(d) preProcessor1(d), @(d) preProcessor2(d)}, 'enabled', [true, false]);
+            obj.manager.preProcessCellData(cellDatas, {@(d) preProcessor1(d), @(d) preProcessor2(d)}, 'enabled', [true, false]);
 
             obj.verifyEqual(cellDatas(1).attributes('test-p1'), 'test');
             obj.verifyEqual(cellDatas(2).attributes('test-p1'), 'test');
             
-            obj.manager.preProcess(cellDatas, {@(d) preProcessor1(d), @(d) preProcessor2(d)}, 'enabled', [true, true]);
+            obj.manager.preProcessCellData(cellDatas, {@(d) preProcessor1(d), @(d) preProcessor2(d)}, 'enabled', [true, true]);
 
             obj.verifyEqual(cellDatas(1).attributes('test-p1'), 'test');
             obj.verifyEqual(cellDatas(1).attributes('test-p2'), 'test');
