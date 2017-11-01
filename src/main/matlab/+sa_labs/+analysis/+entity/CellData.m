@@ -163,12 +163,11 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
             end
             [params, vals] = obj.getNonMatchingParamValues(excluded, epochIndices);
             for i = 1 : numel(vals)
-                try
-                val = unique(vals{i}, 'stable');
-                vals{i} = val;
-                catch e %#ok
-                    % dont perform unique & use the same value
+                value = obj.formatCells(vals{i});
+                if ~ ischar(value) && ~ isscalar(value)
+                    value = unique(value, 'stable');
                 end
+                vals{i} = value;
             end
         end
 
