@@ -311,7 +311,7 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
         
         function saveCellData(obj, entities)
             if isa(entities, 'sa_labs.analysis.entity.EpochData')
-                entities = linq(entities).select(@(e) e.parentCell).toArray();
+                entities = unique(linq(entities).select(@(e) e.parentCell).toArray());
             end
             arrayfun(@(e) obj.analysisDao.saveCell(e), entities);
         end
