@@ -164,7 +164,7 @@ classdef DaoTest < matlab.unittest.TestCase
             obj.verifyEmpty(setdiff(expected, actual));
             
             % Test for Amp extension cell data names
-            names = dao.findCellNames(cellstr('cluster-c1'), true);
+            names = dao.findCellNames(cellstr('cluster-c1*Amp1'));
             obj.verifyEqual(names, cellstr('cluster-c1_Amp1'));
             
             names = dao.findCellNames(cellstr('cluster-c1'));

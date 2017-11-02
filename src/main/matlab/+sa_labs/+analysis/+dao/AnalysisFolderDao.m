@@ -75,12 +75,8 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
             save(path, 'cellData');
         end
         
-        function names = findCellNames(obj, pattern, isCellDataByAmp)
+        function names = findCellNames(obj, pattern)
             
-            if nargin < 3
-                isCellDataByAmp = false;
-            end
-
             names = [];
             if isempty(pattern)
                 return;
@@ -90,22 +86,18 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
                 pattern = obj.repository.dateFormat(pattern);
                 pattern = {[pattern '*c']};
             end
+            isCellDataByAmp = all(cellfun(@(p) any(strfind(p, 'Amp')), pattern)); 
             
             for i = 1 : numel(pattern)
                 p = pattern{i};
                 info = dir([obj.repository.analysisFolder filesep 'cellData' filesep char(p) '*.mat']);
                 fnames = arrayfun(@(d) {d.name(1 : end-4)}, info);
-                names = [fnames; names];
+                names = [fnames; names]; %#ok
             end
             
-            if isempty(names)
-                return
-            end
-            
-            indices = cellfun(@(name) any(strfind(name, '_Amp')), names);
-            if isCellDataByAmp
-                names = names(indices);
-            else
+            % Filter for cell data with out amp extension
+            if ~ isempty(names) && ~ isCellDataByAmp
+                indices = cellfun(@(name) any(strfind(name, '_Amp')), names);
                 names = names(~indices);
             end
         end
