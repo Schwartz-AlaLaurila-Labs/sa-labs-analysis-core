@@ -38,7 +38,9 @@ classdef Feature < handle & matlab.mixin.Heterogeneous
                 obj.downSampled = false;
             end
             d = obj.formatData(d);
-            
+            if isempty(d)
+                d = {[]};
+            end
         end
         
         function obj = set.data(obj, d)

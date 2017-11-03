@@ -28,23 +28,29 @@ classdef EpochGroupTest < matlab.unittest.TestCase
             epochs(1).responseHandle = @(arg) struct('quantity', [1:10]);
             epochs(1).addDerivedResponse('spikes', 1 : 5, 'Amp1');
             epochs(1).addDerivedResponse('spikes', 1 : 8, 'Amp2');
+            epochs(1).addDerivedResponse('someFeature', 1 : 5, 'Amp1');
+            epochs(1).addDerivedResponse('someFeature', [], 'Amp2');
 
             epochs(2) = entity.EpochData();
             epochs(2).dataLinks = containers.Map({'Amp1', 'Amp2' }, {'response1', 'response2'});
             epochs(2).responseHandle = @(arg) struct('quantity', [11:20]);
             epochs(2).addDerivedResponse('spikes', 1 : 3, 'Amp1');
             epochs(2).addDerivedResponse('spikes', 1 : 6, 'Amp2');
-
+            epochs(2).addDerivedResponse('someFeature', [], 'Amp1');
+            epochs(2).addDerivedResponse('someFeature', [{1}, {2}], 'Amp2');
+            
             epochGroup = entity.EpochGroup('test', 'param');
             epochGroup.device = 'Amp1';
             epochGroup.populateEpochResponseAsFeature(epochs);
             obj.verifyEqual(epochGroup.getFeatureData('AMP1_EPOCH'), [(1:10)', (11:20)']);
             obj.verifyEqual(epochGroup.getFeatureData('AMP1_SPIKES'), {(1:5)', (1:3)'});
-            
+            obj.verifyEqual(epochGroup.getFeatureData('AMP1_SOMEFEATURE'), {(1:5)', []});
+             
             epochGroup.device = 'Amp2';
             epochGroup.populateEpochResponseAsFeature(epochs);
             obj.verifyEqual(epochGroup.getFeatureData('AMP2_EPOCH'), [(1:10)', (11:20)']);
             obj.verifyEqual(epochGroup.getFeatureData('AMP2_SPIKES'), {(1:8)', (1:6)'});
+            obj.verifyEqual(epochGroup.getFeatureData('AMP2_SOMEFEATURE'), {{[]}, [{1}, {2}]'});
             
             epochGroup.device = '';
             % epochs are of same size

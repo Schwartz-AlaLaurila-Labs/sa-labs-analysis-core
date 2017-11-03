@@ -83,15 +83,16 @@ classdef GroupTest < matlab.unittest.TestCase
         function testFeature(obj)
             import sa_labs.analysis.entity.*;
             group = Group('root==param');
-            group.createFeature('TEST_FIRST', []);
-            feature = group.getFeatures('TEST_FIRST');
+            group.createFeature('TEST_FIRST_EMPTY', []);
+            feature = group.getFeatures('TEST_FIRST_EMPTY');
             
-            obj.verifyEmpty(feature.data);
+            obj.verifyEmpty(feature.data{:});
             
             % test append data
-            feature.appendData(1 : 1000);
+            group.createFeature('TEST_FIRST', 1 : 1000);
             obj.verifyEqual(group.getFeatures('TEST_FIRST').data, (1 : 1000)');
             
+            feature = group.getFeatures('TEST_FIRST');
             % check feature as reference object
             feature.data = feature.data + ones(1000, 1);
             obj.verifyEqual(group.getFeatures('TEST_FIRST').data, (2 : 1001)');
