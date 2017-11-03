@@ -65,7 +65,7 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
         function r = getResponse(obj, device)
             
             % getResponse - finds the device response by executing call back
-            % 'responseHandle(fname, path)'
+            % 'responseHandle(path)'
             % path - is obtained from dataLinks by matching it with given
             % device @ see symphony2parser.parse() method for responseHandle
             % definition
