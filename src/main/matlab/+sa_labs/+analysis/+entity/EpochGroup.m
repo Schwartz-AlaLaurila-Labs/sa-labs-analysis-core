@@ -119,7 +119,7 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
         end
 
         function tf = hasDevice(obj, key)
-            tf = ~ isempty(strfind(upper(key), upper(obj.device))); %#ok
+            tf = any(strfind(upper(key), upper(obj.device)));
         end
 
         function key = makeValidKey(obj, key)
