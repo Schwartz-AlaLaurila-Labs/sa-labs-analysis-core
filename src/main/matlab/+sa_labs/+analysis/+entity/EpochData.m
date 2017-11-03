@@ -7,13 +7,13 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
     properties (Transient)
         filtered              % used to filter epochs from GUI  
         inMemoryAttributes    % used to visualize derived response but not crucial to store  
-        excluded              % used to delete the epochs  
     end
     
     properties (Hidden)
         dataLinks             % Map with keys as Amplifier device and values as responses
         responseHandle        % amplifere response call back argumet as stream name
-        derivedAttributes     % spikes and other epoch specific pre-processed data  
+        derivedAttributes     % spikes and other epoch specific pre-processed data 
+        excluded              % used to delete the epochs   
     end
     
     methods
