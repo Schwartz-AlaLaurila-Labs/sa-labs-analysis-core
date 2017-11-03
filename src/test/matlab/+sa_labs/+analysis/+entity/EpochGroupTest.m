@@ -36,8 +36,8 @@ classdef EpochGroupTest < matlab.unittest.TestCase
             epochs(2).responseHandle = @(arg) struct('quantity', [11:20]);
             epochs(2).addDerivedResponse('spikes', 1 : 3, 'Amp1');
             epochs(2).addDerivedResponse('spikes', 1 : 6, 'Amp2');
-            epochs(2).addDerivedResponse('someFeature', [], 'Amp1');
-            epochs(2).addDerivedResponse('someFeature', [{1}, {2}], 'Amp2');
+            epochs(2).addDerivedResponse('someFeature', {}, 'Amp1');
+            epochs(2).addDerivedResponse('someFeature', {1, 2}, 'Amp2');
             
             epochGroup = entity.EpochGroup('test', 'param');
             epochGroup.device = 'Amp1';
@@ -50,7 +50,7 @@ classdef EpochGroupTest < matlab.unittest.TestCase
             epochGroup.populateEpochResponseAsFeature(epochs);
             obj.verifyEqual(epochGroup.getFeatureData('AMP2_EPOCH'), [(1:10)', (11:20)']);
             obj.verifyEqual(epochGroup.getFeatureData('AMP2_SPIKES'), {(1:8)', (1:6)'});
-            obj.verifyEqual(epochGroup.getFeatureData('AMP2_SOMEFEATURE'), {{[]}, [{1}, {2}]'});
+            obj.verifyEqual(epochGroup.getFeatureData('AMP2_SOMEFEATURE'), {{[]}, {1,2}'});
             
             epochGroup.device = '';
             % epochs are of same size
