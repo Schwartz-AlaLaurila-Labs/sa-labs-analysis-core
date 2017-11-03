@@ -66,6 +66,7 @@ classdef SymphonyV1Parser < sa_labs.analysis.parser.SymphonyParser
                 epoch = entity.EpochData();
                 epoch.attributes('epochStartTime') = epochTimes_sorted(i);
                 epoch.attributes('epochNum') = i;
+                epoch.attributes('epochTime') = util.dotnetTicksToDateTime(epochTimes(groupInd));
                 epoch.parentCell = data;
                 epoch.attributes = obj.mapAttributes(EpochDataGroups(groupInd).Groups(1), epoch.attributes);
                 epoch.dataLinks = obj.addDataLinks(EpochDataGroups(groupInd).Groups(2).Groups);
@@ -74,7 +75,7 @@ classdef SymphonyV1Parser < sa_labs.analysis.parser.SymphonyParser
                 data.epochs(i) = epoch;
             end
             data.attributes('Nepochs') = nEpochs;
-            data.h5File = obj.fname;
+            data.attributes('h5File') = obj.fname;
             obj.addCellDataByAmps(data);
         end
         

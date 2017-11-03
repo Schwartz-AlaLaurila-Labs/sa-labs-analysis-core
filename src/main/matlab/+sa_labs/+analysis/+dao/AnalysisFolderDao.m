@@ -95,7 +95,7 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
                 names = [fnames; names]; %#ok
             end
             
-            % Filter for cell data with out amp extension
+            % Filter for cell data without amp extension
             if ~ isempty(names) && ~ isCellDataByAmp
                 indices = cellfun(@(name) any(strfind(name, '_Amp')), names);
                 names = names(~indices);
@@ -115,7 +115,7 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
             end
         end
         
-        function saveAnalysisResults(obj, resultId, result, protocol)
+        function saveAnalysisResults(obj, resultId, result, protocol) %#ok
             dir = [obj.repository.analysisFolder filesep 'analysisTrees' filesep];
             if ~ exist(dir, 'dir')
                 mkdir(dir);
@@ -137,18 +137,17 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
                 p = pattern{i};
                 info = dir([obj.repository.analysisFolder filesep 'analysisTrees' filesep '*' char(p) '*.mat']);
                 fnames = arrayfun(@(d) {d.name(1 : end-4)}, info);
-                names = [fnames; names];
+                names = [fnames; names]; %#ok
             end
         end
         
         function result = findAnalysisResult(obj, resultId)
-            r = [];
             path = [obj.repository.analysisFolder filesep 'analysisTrees' filesep resultId];
             r = load(path);
             result = r.result;
         end
         
-        function saveCellDataFilter(obj, filterName, filterTable)
+        function saveCellDataFilter(obj, filterName, filterTable) %#ok
             dir = [obj.repository.analysisFolder filesep 'filters' filesep 'cellData' filesep];
             if ~ exist(dir, 'dir')
                 mkdir(dir);

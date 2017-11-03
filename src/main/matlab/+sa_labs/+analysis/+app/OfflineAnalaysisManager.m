@@ -165,6 +165,7 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
         end
         
         function preProcessEpochData(obj, epochDatas, functions, varargin)
+            
             % preProcessEpochData - apply list of functions to list of epochData
             % and serializes the results to disk for later lookup
             %

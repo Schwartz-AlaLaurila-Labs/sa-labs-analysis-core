@@ -1,13 +1,12 @@
 classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
     
     properties
-        parentCell            % parent cell
-        excluded              % soft delete epoch  
+        parentCell            % parent cell see @ sa_labs.analysis.entity.CellData
     end
 
     properties (Transient)
         filtered              % used to filter epochs from GUI  
-        inMemoryAttributes
+        inMemoryAttributes    % used to visualize derived response but not crucial to store  
     end
     
     properties (Hidden)
@@ -21,7 +20,6 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
         function obj = EpochData()
             obj.dataLinks = containers.Map();
             obj.derivedAttributes = containers.Map();
-            obj.excluded = false;
             obj.filtered = true;
         end
         
@@ -65,7 +63,7 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
         function r = getResponse(obj, device)
             
             % getResponse - finds the device response by executing call back
-            % 'responseHandle(path)'
+            % 'responseHandle(fname, path)'
             % path - is obtained from dataLinks by matching it with given
             % device @ see symphony2parser.parse() method for responseHandle
             % definition
@@ -152,7 +150,7 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
 
         function deviceType = getDefaultDeviceType(obj)
             deviceType = [];
-            if ~ isempty(obj.parentCell) && ~ isempty(obj.parentCell.deviceType)
+            if ~ isempty(obj.parentCell) && ~ obj.parentCell.isClusterRecording()
                 deviceType = obj.parentCell.deviceType;
             end
         end      

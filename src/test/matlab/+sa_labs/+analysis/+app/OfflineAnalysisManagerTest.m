@@ -196,8 +196,8 @@ classdef OfflineAnalysisManagerTest < matlab.unittest.TestCase
             cellDatas = sa_labs.analysis.entity.CellData.empty(0, n);
             for i = 1 : n
                 cellDatas(i) = sa_labs.analysis.entity.CellData();
-                cellDatas(i).h5File = file;
-                cellDatas(i).recordingLabel = labels{i};
+                cellDatas(i).attributes('h5File') = file;
+                cellDatas(i).attributes('recordingLabel') = labels{i};
             end
         end 
     end

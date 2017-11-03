@@ -1,17 +1,27 @@
 classdef CellData < sa_labs.analysis.entity.KeyValueEntity
     
     properties
-        epochs
+        epochs              % Array of epochs belongs to cell. See @sa_labs.analysis.entity.EpochData
     end
     
     properties (Dependent)
-        experimentDate
-        h5File
-        recordingLabel
+        experimentDate      % Experiment date which is grabbed from the first epoch start time
+        h5File              % Location of the raw data file
+        recordingLabel      % Unique identifier of the cell. <Date>c<number>
+        isClusterRecording  % True if it is the cell cluster, false otherwise
+    end
+    
+    % Below list of attributes will be loaded from the analysis preference files
+    % https://schwartz-alalaurila-labs.github.io/sa-labs-analysis-preference/
+    
+    properties (Dependent)
+        cellType            % Cell type of the recorded cell.
+        recordedBy          % University login name of person who did the experiment. It will be used to synchronize the folder in servers
+        recordingQuality    % Decides the recording quality
     end
 
     properties (Transient)
-        deviceType
+        deviceType          % It should be empty for cell-cluster
     end
     
     methods
@@ -207,8 +217,8 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
             map = obj.attributes;
         end
         
-        function set.h5File(obj, value)
-            obj.attributes('h5File') = value;
+        function experimentDate = get.experimentDate(obj)
+            experimentDate = datestr(obj.epochs(1).get('epochTime'), 'yyyy-mm-dd');
         end
         
         function fname = get.h5File(obj)
@@ -219,16 +229,39 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
             end
         end
         
-        function set.recordingLabel(obj, value)
-            obj.attributes('recordingLabel') = value;
-        end
-        
         function label = get.recordingLabel(obj)
             label = strcat(obj.h5File, obj.get('recordingLabel'));
-            if ~ isempty(obj.deviceType)
+            if ~ obj.isClusterRecording()
                 label = strcat(label, '_', obj.deviceType);
             end 
-        end            
+        end
+        
+        function tf = get.isClusterRecording(obj)
+            tf = isempty(obj.deviceType);
+        end
+            
+        function cellType = get.cellType(obj)
+            cellType = [];
+            if ~ obj.isClusterRecording()
+                 key = strcat(obj.deviceType, '_', 'ConfirmedCellType');
+                 cellType = obj.get(key);
+            end
+        end
+        
+        function set.cellType(obj, cellType)
+            % Set cell type only for single cell recording
+            
+            if obj.isClusterRecording()
+                error('cannot assign celType for cell cluster');
+            end
+            key = strcat(obj.deviceType, '_', 'ConfirmedCellType');
+            obj.attributes(key) = cellType;
+        end
+        
+        function recordedBy = get.recordedBy(obj)
+            recordedBy = obj.get('recordedBy');
+        end
+        
     end
     
     methods(Access = protected)
