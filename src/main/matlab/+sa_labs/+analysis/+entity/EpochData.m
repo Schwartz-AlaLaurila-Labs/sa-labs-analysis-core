@@ -7,6 +7,7 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
     properties (Transient)
         filtered              % used to filter epochs from GUI  
         inMemoryAttributes    % used to visualize derived response but not crucial to store  
+        excluded              % used to delete the epochs  
     end
     
     properties (Hidden)
@@ -21,6 +22,7 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
             obj.dataLinks = containers.Map();
             obj.derivedAttributes = containers.Map();
             obj.filtered = true;
+            obj.excluded = false;
         end
         
         function v = get(obj, key)
