@@ -21,17 +21,17 @@ classdef GroupTest < matlab.unittest.TestCase
             group.appendFeature(f);
             
             features = group.getFeatures({'TEST_FIRST', 'TEST_FIRST'});
-            obj.verifyEqual([features(:).data], (1 : 1000)');
+            obj.verifyEqual([features(:).data], {(1 : 1000)'});
             
             features = group.getFeatures({'TEST_FIRST', 'TEST_SECOND'});
-            obj.verifyEqual([features(:).data], [(1 : 1000)', (1001 : 2000)']);
+            obj.verifyEqual([features(:).data], [{(1 : 1000)'}, {(1001 : 2000)'}]);
         end
         
         function testGetFeatureData(obj)
             import sa_labs.analysis.*;
             group = entity.Group('test==param');
             group.createFeature('TEST_FIRST', 1 : 1000, 'properties', []);
-            obj.verifyEqual(group.getFeatureData('TEST_FIRST'),(1 : 1000)');
+            obj.verifyEqual(group.getFeatureData('TEST_FIRST'), {(1 : 1000)'});
             
             handle = @() group.createFeature('TEST_FIRST', ones(1000, 1), 'properties', []);
             obj.verifyWarning(handle, app.Exceptions.OVERWRIDING_FEATURE.msgId);
@@ -89,29 +89,12 @@ classdef GroupTest < matlab.unittest.TestCase
             obj.verifyEmpty(feature.data{:});
             
             % test append data
-            group.createFeature('TEST_FIRST', 1 : 1000);
-            obj.verifyEqual(group.getFeatures('TEST_FIRST').data, (1 : 1000)');
-            
-            feature = group.getFeatures('TEST_FIRST');
-            % check feature as reference object
-            feature.data = feature.data + ones(1000, 1);
-            obj.verifyEqual(group.getFeatures('TEST_FIRST').data, (2 : 1001)');
-            
-            % scalar check
-            feature.appendData(1002);
-            obj.verifyEqual(group.getFeatures('TEST_FIRST').data, (2 : 1002)');
-            
-            % vector check
-            feature.appendData(1003 : 1010);
-            obj.verifyEqual(group.getFeatures('TEST_FIRST').data, (2 : 1010)');
-            
-            % adding same feature again shouldnot append to the feature map
-            group.appendFeature(feature);
-            obj.verifyEqual(group.getFeatures('TEST_FIRST').data, (2 : 1010)');
+            feature = group.createFeature('TEST_FIRST', 1 : 1000);
+            obj.verifyEqual(group.getFeatures('TEST_FIRST').data, {(1 : 1000)'});
             
             % function handle check
             feature.data = @() 5 * ones(1, 10);
-            expected =  5 * ones(10, 1);
+            expected =  {5 * ones(10, 1)};
             obj.verifyEqual(group.getFeatures('TEST_FIRST').data, expected);
             
         end
@@ -142,7 +125,7 @@ classdef GroupTest < matlab.unittest.TestCase
             % feature map check
             obj.verifyEqual(newGroup.getFeatureKey(), { 'TEST_SECOND' });
             data = newGroup.getFeatureData('TEST_SECOND');
-            obj.verifyEqual(data, ones(1000, 1));
+            obj.verifyEqual(data, {ones(1000, 1)});
             
             obj.verifyError(@()newGroup.update(group, 'TEST_FIRST', 'TEST_SECOND'), 'in:out:mismatch')
             
@@ -169,7 +152,7 @@ classdef GroupTest < matlab.unittest.TestCase
             % consistency check for old group
             obj.verifyEqual(group.getFeatureKey(), {'TEST_FIRST', 'TEST_SECOND'});
             features = group.getFeatures({'TEST_FIRST', 'TEST_SECOND'});
-            obj.verifyEqual([features(:).data], [(1 : 1000)', ones(1000, 1)]);
+            obj.verifyEqual([features(:).data], [{(1 : 1000)'}, {ones(1000, 1)}]);
         end
         
     end

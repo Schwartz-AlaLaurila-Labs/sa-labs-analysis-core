@@ -42,26 +42,26 @@ classdef EpochGroupTest < matlab.unittest.TestCase
             epochGroup = entity.EpochGroup('test', 'param');
             epochGroup.device = 'Amp1';
             epochGroup.populateEpochResponseAsFeature(epochs);
-            obj.verifyEqual(epochGroup.getFeatureData('AMP1_EPOCH'), [(1:10)', (11:20)']);
-            obj.verifyEqual(epochGroup.getFeatureData('AMP1_SPIKES'), {(1:5)', (1:3)'});
-            obj.verifyEqual(epochGroup.getFeatureData('AMP1_SOMEFEATURE'), {(1:5)', []});
+            obj.verifyEqual(epochGroup.getFeatureData('AMP1_EPOCH'), {(1:10)'; (11:20)'});
+            obj.verifyEqual(epochGroup.getFeatureData('AMP1_SPIKES'), {(1:5)'; (1:3)'});
+            obj.verifyEqual(epochGroup.getFeatureData('AMP1_SOMEFEATURE'), {(1:5)'; []});
              
             epochGroup.device = 'Amp2';
             epochGroup.populateEpochResponseAsFeature(epochs);
-            obj.verifyEqual(epochGroup.getFeatureData('AMP2_EPOCH'), [(1:10)', (11:20)']);
-            obj.verifyEqual(epochGroup.getFeatureData('AMP2_SPIKES'), {(1:8)', (1:6)'});
-            obj.verifyEqual(epochGroup.getFeatureData('AMP2_SOMEFEATURE'), {{[]}, {1,2}'});
+            obj.verifyEqual(epochGroup.getFeatureData('AMP2_EPOCH'), {(1:10)'; (11:20)'});
+            obj.verifyEqual(epochGroup.getFeatureData('AMP2_SPIKES'), {(1:8)'; (1:6)'});
+            obj.verifyEqual(epochGroup.getFeatureData('AMP2_SOMEFEATURE'), {[]; {1,2}'});
             
             epochGroup.device = '';
             % epochs are of same size
             obj.verifyEqual(epochGroup.getFeatureData('EPOCH'),...
-                 {[(1:10)', (11:20)'],...  % belongs to first epoch
-                  [(1:10)', (11:20)']});   % belongs to second epoch
+                  {(1:10)', (1:10)';...  
+                   (11:20)', (11:20)'});   
 
             % spikes are of different size
             obj.verifyEqual(epochGroup.getFeatureData('SPIKES'),...
-                 { (1:5)', (1:8)';...
-                   (1:3)', (1:6)' });
+                 {(1:5)', (1:8)';...
+                  (1:3)', (1:6)' });
         end
     end    
 end

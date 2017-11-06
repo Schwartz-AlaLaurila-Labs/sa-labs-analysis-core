@@ -38,54 +38,35 @@ classdef Feature < handle & matlab.mixin.Heterogeneous
                 obj.downSampled = false;
             end
             d = obj.formatData(d);
-            if isempty(d)
-                d = {[]};
-            end
         end
         
         function obj = set.data(obj, d)
             obj.dataHandler = d;
         end
-        
-        function appendData(obj, value)
-            import sa_labs.analysis.util.collections.*;
-
-            value = obj.formatData(value);
-            
-            if isscalar(value)
-                d = obj.data;
-                d(end + 1) = value;
-                obj.data = d;
-            elseif iscell(value)
-                value = obj.rowMajor(value);
-                data = obj.rowMajor(obj.data);
-                obj.data = addToCell(data, value);
-            else
-                obj.data = [obj.data; value];
-            end
-        end
-
     end
     
     methods (Access = private)
         
         function data = formatData(obj, data)
+            if isempty(data)
+                data = {[]};
+                return
+            end
             
             if ischar(data)
                 data = cellstr(data);
                 return
             end
-            % if its more than one dimension wrap in a cell array
-            if all(size(data) > 1)
-                data = {data};
-                return
-            end 
-            
             data = obj.columnMajor(data);
             factor = obj.description.downSampleFactor;
             if ~ isempty(factor) && ~ iscell(data) && ~ obj.downSampled
                 data = downsample(data, factor);
                 obj.downSampled = true;
+            end
+            % if its more than one dimension wrap in a cell array
+            if any(size(data) > 1)
+                data = {data};
+                return
             end
         end
 
@@ -93,14 +74,6 @@ classdef Feature < handle & matlab.mixin.Heterogeneous
             [rows, columns] = size(data);
             
             if rows == 1 && columns > 1
-                data = data';
-            end
-        end
-
-        function data = rowMajor(~, data)
-            [rows, columns] = size(data);
-            
-            if rows > 1 && columns == 1
                 data = data';
             end
         end

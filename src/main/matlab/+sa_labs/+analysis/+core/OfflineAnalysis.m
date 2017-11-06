@@ -33,7 +33,7 @@ classdef OfflineAnalysis < sa_labs.analysis.core.Analysis
                 obj.log.debug('Split parameter [devices] not found, hence trying cell data specfic device type');
                 devices = obj.cellData.deviceType;
                 if isempty(devices)
-                    obj.log.error('Provide [devices] as split parameter (or) use amplifier specific cell data');
+                    obj.log.warn(['No parent with [devices] as split parameter found for group [ ' group.name ' ]']);
                 end
             end
         end 

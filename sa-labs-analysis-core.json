@@ -8,7 +8,7 @@
 		"name": "sa-labs-analysis-core",
 		"pathPlacement": "append",
 		"requirementHook": "",
-		"subfolder": "src/main/matlab",
+		"subfolder": "src/main",
 		"toolboxRoot": "",
 		"type": "git",
 		"update": "",

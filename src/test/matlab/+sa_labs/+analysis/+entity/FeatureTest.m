@@ -32,29 +32,15 @@ classdef FeatureTest < matlab.unittest.TestCase
             description = entity.FeatureDescription(propertyMap);
             
             feature = entity.Feature(description, @() 1 : 10);
-            obj.verifyEqual(feature.data, (1 : 10)');
+            obj.verifyEqual(feature.data, {(1 : 10)'});
             
             description.downSampleFactor = 2;
-            obj.verifyEqual(feature.data, (1 : 2 : 10)');
-            
-            % verify vector
-            feature.appendData(11 : 2 : 20);
-            obj.verifyEqual(feature.data, (1 : 2 : 20)');
-            
-            % verify scalar
-            feature.appendData(21);
-            obj.verifyEqual(feature.data, (1 : 2 : 22)');
+            obj.verifyEqual(feature.data, {(1 : 2 : 10)'});
             
             % verify cell array
             expected = {'abc', 'def'};
             feature = entity.Feature(description, expected);
-            obj.verifyEqual(feature.data, expected');
-            
-            feature.appendData({'ghi', 'jkl'});
-            obj.verifyEqual(feature.data, {expected{:}, 'ghi', 'jkl'}');
-            
-            feature.appendData({'mno', 'pqr'}');
-            obj.verifyEqual(feature.data, {expected{:}, 'ghi', 'jkl', 'mno', 'pqr'}');
+            obj.verifyEqual(feature.data, {expected'});
         end
         
     end
