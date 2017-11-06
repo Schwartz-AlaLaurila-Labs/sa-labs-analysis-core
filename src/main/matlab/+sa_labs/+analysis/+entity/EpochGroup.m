@@ -41,7 +41,8 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
             import sa_labs.analysis.app.*;
 
             if isempty(obj.device)
-                throw(Exceptions.DEVICE_NOT_PRESENT.create('message', obj.name))
+                Exceptions.DEVICE_NOT_PRESENT.create('message', obj.name, 'warning', true);
+                return;
             end
         
             for epoch = each(epochs)
