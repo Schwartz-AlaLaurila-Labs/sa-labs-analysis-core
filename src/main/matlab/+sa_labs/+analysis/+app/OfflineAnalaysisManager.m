@@ -147,11 +147,11 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             updatedCells = [];
 
             for cellData = each(cellDatas)
-                epochs = cellData.getlAllEpochs();
+                epochs = cellData.epochs;
                 excludedIndices = [epochs.excluded];
 
                 if any(excludedIndices)
-                    cellData.epochs = epochs(validIndices);
+                    cellData.epochs = epochs(~ excludedIndices);
                     obj.analysisDao.saveCell(cellData);
                     obj.log.info(['Deleted excluded epochs for [ ' cellData.recordingLabel ' ] ']);
                     updatedCells = [updatedCells, cellData]; %#ok
