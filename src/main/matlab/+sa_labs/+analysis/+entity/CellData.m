@@ -166,9 +166,11 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
             [params, vals] = obj.getNonMatchingParamValues(excluded, epochIndices);
             for i = 1 : numel(vals)
                 value = vals{i};
-                if (~ iscell(value) && ~ isscalar(value)) || ~ all(cellfun(@isdatetime, value))  
-                    value = unique(value, 'stable');
+                if isempty(value) || isscalar(value) || (iscell(value) && ~ iscellstr(value))
+                    continue;
                 end
+                % valid numeric or cell array data type reaches here !
+                value = unique(value, 'stable');
                 vals{i} = value;
             end
         end
