@@ -8,7 +8,9 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
     end
     
     methods
-        
+
+        % CellData and EpochData related functions
+
         function obj = OfflineAnalaysisManager(config)
             obj = obj@mdepin.Bean(config);
             obj.log = logging.getLogger(sa_labs.analysis.app.Constants.ANALYSIS_LOGGER);
@@ -63,6 +65,107 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             end
         end
         
+        function d = getParsedCellData(obj, pattern)
+
+            dao = obj.analysisDao;
+            [parsedExperiments, unParsedExperiments] = obj.getParsedAndUnParsedFiles(cellstr(pattern));
+            
+            for unParsedExp = each(unParsedExperiments)
+                obj.parseSymphonyFiles(unParsedExp);
+                parsedExperiments{end + 1} = unParsedExp; %#ok <AGROW>
+            end
+            
+            d = linq(dao.findCellNames(parsedExperiments))...
+                .select(@(name) dao.findCell(name))...
+                .where(@(d) ~ isempty(d.get('recordingLabel'))).toArray();
+        end
+
+        function preProcessCellData(obj, cellDatas, functions, varargin)
+            
+            % preProcessCellData - apply list of functions to list of cellDatas
+            % and serializes the results to disk for later lookup
+            %
+            % One can control the list of functions to be applied by
+            % using boolean array parameter 'enabled' @see usage
+            %
+            % usage : obj.preProcessCellData(cellData,{@(d) fun1(d), @(d) fun2(d) })
+            %         obj.preProcessCellData(cellData,{@(d) fun1(d), @(d) fun2(d) }, 'enabled', [true, true])
+            %
+            
+            n = numel(functions);
+            ip = inputParser;
+            ip.addParameter('enabled', ones(1, n), @islogical);
+            ip.parse(varargin{:});
+            enabled = ip.Results.enabled;
+            
+            for data = each(cellDatas)
+                obj.log.info(['pre processing data [ ' data.recordingLabel ' ] ']);                
+                obj.preProcess(functions(enabled), data);
+                obj.analysisDao.saveCell(data);
+            end
+        end
+        
+        function preProcessEpochData(obj, epochDatas, functions, varargin)
+            
+            % preProcessEpochData - apply list of functions to list of epochData
+            % and serializes the results to disk for later lookup
+            %
+            % One can control the list of functions to be applied by
+            % using boolean array parameter 'enabled' @see usage
+            %
+            % usage : obj.preProcessEpochData(epochDatas,{@(d) fun1(d), @(d) fun2(d) })
+            %         obj.preProcessEpochData(epochDatas,{@(d) fun1(d), @(d) fun2(d) }, 'enabled', [true, true])
+            %
+            
+            n = numel(functions);
+            ip = inputParser;
+            ip.addParameter('enabled', ones(1, n), @islogical);
+            ip.parse(varargin{:});
+            enabled = ip.Results.enabled;
+            
+            for data = each(epochDatas)
+                obj.preProcess(functions(enabled), data);
+                obj.log.info(['pre processing done for epoch number [' num2str(data.get('epochNum')) ']' ]);                
+                obj.analysisDao.saveCell(data.parentCell);
+            end
+        end
+        
+        function updatedCells = deleteEpochFromCells(obj, cellDatas)
+
+            % deleteEpochFromCells - removes all the excluded epochs from the cellData
+            % and serializes the results to disk for later lookup
+            %
+            % returns - updated cell data array
+            %
+            % One can control the epochs to be deleted by setting epoch.excluded = true
+            % @ see sa_labs.analysis.entity.EpochData 
+            % @ see sa_labs.analysis.entity.CellData, method: get.epochs(obj), getlAllEpochs(obj)
+            %
+            % usage : obj.deleteEpochFromCells(cellData)
+            %         obj.deleteEpochFromCells([cellData1, cellData2])
+            
+            updatedCells = [];
+
+            for cellData = each(cellDatas)
+                epochs = cellData.getlAllEpochs();
+                excludedIndices = [epochs.excluded];
+
+                if any(excludedIndices)
+                    cellData.epochs = epochs(validIndices);
+                    obj.analysisDao.saveCell(cellData);
+                    obj.log.info(['Deleted excluded epochs for [ ' cellData.recordingLabel ' ] ']);
+                    updatedCells = [updatedCells, cellData]; %#ok
+                end
+            end
+        end
+
+        function saveCellData(obj, entities)
+            if isa(entities, 'sa_labs.analysis.entity.EpochData')
+                entities = unique(linq(entities).select(@(e) e.parentCell).toArray());
+            end
+            arrayfun(@(e) obj.analysisDao.saveCell(e), entities);
+        end
+
         function [parsedExperiments, unParsedExperiments] = getParsedAndUnParsedFiles(obj, experiments)
             
             % A simple utility function to get parsed and un-parsed files
@@ -74,6 +177,11 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             
             obj.log.info(['list of parsed files [ ' [parsedExperiments{:}] ' ] unParsed files [ ' [unParsedExperiments{:}] ' ]']);
         end
+    end
+
+    methods 
+
+        % AnalysisProject, FeatureFinder, Analysis related functions 
         
         function obj = createProject(obj, project)
             
@@ -108,87 +216,6 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             obj.log.info(['Project created under location [ ' strrep(project.file, '\', '/') ' ]' ]);
         end
 
-        function d = getParsedCellData(obj, pattern)
-            dao = obj.analysisDao;
-            [parsedExperiments, unParsedExperiments] = obj.getParsedAndUnParsedFiles(cellstr(pattern));
-            
-            for unParsedExp = each(unParsedExperiments)
-                obj.parseSymphonyFiles(unParsedExp);
-                parsedExperiments{end + 1} = unParsedExp; %#ok <AGROW>
-            end
-            
-            d = linq(dao.findCellNames(parsedExperiments))...
-                .select(@(name) dao.findCell(name))...
-                .where(@(d) ~ isempty(d.get('recordingLabel'))).toArray();
-        end
-        
-        function preProcessCellData(obj, cellDatas, functions, varargin)
-            
-            % preProcessCellData - apply list of functions to list of cellDatas
-            % and serializes the results to disk for later lookup
-            %
-            % One can control the list of functions to be applied by
-            % using boolean array parameter 'enabled' @see usage
-            %
-            % usage : obj.preProcessCellData(cellData,{@(d) fun1(d), @(d) fun2(d) })
-            %         obj.preProcessCellData(cellData,{@(d) fun1(d), @(d) fun2(d) }, 'enabled', [true, true])
-            %
-            
-            n = numel(functions);
-            ip = inputParser;
-            ip.addParameter('enabled', ones(1, n), @islogical);
-            ip.parse(varargin{:});
-            enabled = ip.Results.enabled;
-            
-            for data = each(cellDatas)
-                obj.log.info(['pre processing data [ ' data.recordingLabel ' ] ']);                
-                obj.preProcess(functions(enabled), data);
-                obj.analysisDao.saveCell(data);
-            end
-        end
-
-        function updatedCells = deleteEpochFromCells(obj, cellDatas)
-            updatedCells = [];
-            for cellData = each(cellDatas)
-                epochs = cellData.epochs;
-                indices = 1 : numel(epochs);
-                excludedIndices = linq(indices).where(@(i) epochs(i).excluded).toArray();
-                
-                if ~ isempty(excludedIndices)
-                    validIndices  = ~ ismember(indices, excludedIndices);
-                    cellData.epochs = epochs(validIndices);
-                    obj.analysisDao.saveCell(cellData);
-                    obj.log.info(['Deleted excluded epochs for [ ' cellData.recordingLabel ' ] ']);
-                    updatedCells = [updatedCells, cellData]; %#ok
-                end
-            end
-        end
-        
-        function preProcessEpochData(obj, epochDatas, functions, varargin)
-            
-            % preProcessEpochData - apply list of functions to list of epochData
-            % and serializes the results to disk for later lookup
-            %
-            % One can control the list of functions to be applied by
-            % using boolean array parameter 'enabled' @see usage
-            %
-            % usage : obj.preProcessEpochData(epochDatas,{@(d) fun1(d), @(d) fun2(d) })
-            %         obj.preProcessEpochData(epochDatas,{@(d) fun1(d), @(d) fun2(d) }, 'enabled', [true, true])
-            %
-            
-            n = numel(functions);
-            ip = inputParser;
-            ip.addParameter('enabled', ones(1, n), @islogical);
-            ip.parse(varargin{:});
-            enabled = ip.Results.enabled;
-            
-            for data = each(epochDatas)
-                obj.preProcess(functions(enabled), data);
-                obj.log.info(['pre processing done for epoch number [' num2str(data.get('epochNum')) ']' ]);                
-                obj.analysisDao.saveCell(data.parentCell);
-            end
-        end
-        
         function project = initializeProject(obj, name)
             
             dao = obj.analysisDao;
@@ -301,7 +328,12 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             finder = obj.analysisFactory.createFeatureFinder('project', name,...
                 'data', results);
         end
-        
+    end 
+
+    methods        
+
+        % Facade for the utlities used in user interface
+
         function saveCellDataFilter(obj, name, filterTable)
             obj.analysisDao.saveCellDataFilter(name, filterTable);
         end
@@ -309,13 +341,7 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
         function filterMap = getCellDataFilters(obj)
             filterMap = obj.analysisDao.getCellDataFilters();
         end
-        
-        function saveCellData(obj, entities)
-            if isa(entities, 'sa_labs.analysis.entity.EpochData')
-                entities = unique(linq(entities).select(@(e) e.parentCell).toArray());
-            end
-            arrayfun(@(e) obj.analysisDao.saveCell(e), entities);
-        end
+
     end
     
     methods (Access = private)

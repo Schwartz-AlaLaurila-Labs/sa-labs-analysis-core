@@ -40,6 +40,7 @@ classdef EpochData < sa_labs.analysis.entity.KeyValueEntity
         end
 
         function [keys, values] = getMatchingKeyValue(obj, pattern)
+            
             % keys - Returns the matched parameter for given
             % search string
             %

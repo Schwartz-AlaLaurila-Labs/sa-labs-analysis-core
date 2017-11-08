@@ -6,8 +6,8 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
     
     properties (Dependent)
         experimentDate      % Experiment date which is grabbed from the first epoch start time
-        h5File              % Location of the raw data file
-        recordingLabel      % Unique identifier of the cell. <Date>c<number>
+        h5File              % Name of the raw data file
+        recordingLabel      % Unique identifier of the cell. <h5File><recordingLabel>_<deviceType> Example: 20170325c1_Amp1 where, h5File: 20170325c, recordingLabel: 1 and deviceType: Amp1
         isClusterRecording  % True if it is the cell cluster, false otherwise
     end
     
@@ -15,9 +15,8 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
     % https://schwartz-alalaurila-labs.github.io/sa-labs-analysis-preference/
     
     properties (Dependent)
-        cellType            % Cell type of the recorded cell.
+        cellType            % Cell type of the recorded cell. Cell type can be assigned only when deviceType is empty (i.e non cluster recording)
         recordedBy          % University login name of person who did the experiment. It will be used to synchronize the folder in servers
-        recordingQuality    % Decides the recording quality
     end
 
     properties (Transient)
@@ -52,13 +51,9 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
                 parameterDescription = parameter;
             end
             
-            n = length(epochIndices);
-            values = cell(1,n);
-            
-            for i = 1 : n
-                epoch = obj.epochs(epochIndices(i));
-                values{i} = obj.getValue(functionHandle(epoch));
-            end
+            values = linq(obj.epochs(epochIndices)).where(@(e) ~ e.excluded)...
+                        .select(@(e) obj.getValue(functionHandle(e))).toList();
+
             values = obj.formatCells(values);
         end
         
@@ -90,19 +85,21 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
                 functionHandle = @(epoch) epoch.get(parameter);
                 parameterDescription = parameter;
             end
-            map = containers.Map();
-            
+            map = containers.Map();           
             import sa_labs.analysis.util.collections.*;
             
             for epochIndex = epochIndices
-                value = functionHandle(obj.epochs(epochIndex));
-                value = obj.formatCells(value);
+                epoch = obj.epochs(epochIndex);
                 
-                try
-                    map = addToMap(map, num2str(value), epochIndex);
-                catch e %#ok
-                    for v = each(value)
-                        map = addToMap(map, num2str(v), epochIndex);
+                if ~ epoch.excluded 
+                    value = functionHandle(epoch);
+                    value = obj.formatCells(value);
+                    try
+                        map = addToMap(map, num2str(value), epochIndex);
+                    catch e %#ok
+                        for v = each(value)
+                            map = addToMap(map, num2str(v), epochIndex);
+                        end
                     end
                 end
             end
@@ -121,12 +118,11 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
             if nargin < 2
                 epochIndices = 1 : numel(obj.epochs);
             end
-            
-            n = length(epochIndices);
             keySet = [];
-            
-            for i = 1 : n
-                epoch = obj.epochs(epochIndices(i));
+            epochDatas = obj.epochs(epochIndices);
+            activeEpochs = epochDatas(~ [epochDatas.excluded]);
+
+            for epoch = activeEpochs
                 keySet = epoch.unionAttributeKeys(keySet);
             end
         end
@@ -147,13 +143,9 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
             keys = setdiff(obj.getEpochKeysetUnion(epochIndices), excluded);
             map = containers.Map();
             
-            for i = 1 : length(keys)
-                key = keys{i};
+            for key = each(keys)
                 values = obj.getEpochValues(key, epochIndices);
-                if iscell(values) && ~ iscellstr(values)
-                    values = [values{:}];
-                end
-                map(key) = values;
+                map(key) = obj.formatCells(values);
             end
             params = map.keys;
             vals = map.values;
@@ -173,8 +165,8 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
             end
             [params, vals] = obj.getNonMatchingParamValues(excluded, epochIndices);
             for i = 1 : numel(vals)
-                value = obj.formatCells(vals{i});
-                if ~ ischar(value) && ~ isscalar(value)
+                value = vals{i};
+                if ~ isscalar(value)
                     value = unique(value, 'stable');
                 end
                 vals{i} = value;
@@ -211,10 +203,6 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
                 epochIndices = 1 : numel(obj.epochs);
             end
             [params, vals] = obj.getUniqueNonMatchingParamValues([], epochIndices);
-        end
-        
-        function map = getPropertyMap(obj)
-            map = obj.attributes;
         end
         
         function experimentDate = get.experimentDate(obj)
@@ -262,6 +250,9 @@ classdef CellData < sa_labs.analysis.entity.KeyValueEntity
             recordedBy = obj.get('recordedBy');
         end
         
+        function map = getPropertyMap(obj)
+            map = obj.attributes;
+        end
     end
     
     methods(Access = protected)
