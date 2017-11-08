@@ -12,7 +12,7 @@ classdef CellDataTest < matlab.unittest.TestCase
             
             obj.seedGenerator = rng('default');
             noise = randn(100);
-            keys = {'intensity', 'stimTime'};
+            keys = {'intensity', 'stimTime', 'epochTime'};
             obj.epochs = EpochData.empty(0, 100);
             factor = 1;
             
@@ -22,7 +22,7 @@ classdef CellDataTest < matlab.unittest.TestCase
                 if mod(i, 10) == 0
                     factor = factor + 1;
                 end
-                e.attributes = containers.Map(keys, {factor * 10,  [num2str(factor * 20) 'ms'] });
+                e.attributes = containers.Map(keys, {factor * 10,  [num2str(factor * 20) 'ms'], datetime});
                 e.dataLinks = containers.Map({'Amp1', 'Amp2' }, {'response1', 'response2'});
                 e.responseHandle = @(arg) noise;
                 obj.epochs(i) = e;
@@ -193,10 +193,10 @@ classdef CellDataTest < matlab.unittest.TestCase
             cellData.epochs = obj.epochs;
             
             keySet = cellData.getEpochKeysetUnion(1 : 5 : 100);
-            obj.verifyEqual(keySet, {'intensity', 'stimTime'});
+            obj.verifyEqual(keySet, {'epochTime', 'intensity', 'stimTime'});
             
             keySet = cellData.getEpochKeysetUnion();
-            obj.verifyEqual(keySet, {'intensity', 'stimTime'});
+            obj.verifyEqual(keySet, {'epochTime', 'intensity', 'stimTime'});
         end
         
         function testGetEpochKeysetUnionExcluded(obj)
@@ -219,7 +219,7 @@ classdef CellDataTest < matlab.unittest.TestCase
             cellData = CellData();
             cellData.epochs = obj.epochs;
             
-            [params, values] = cellData.getNonMatchingParamValues({'intensity'} ,1 : 5 : 100);
+            [params, values] = cellData.getNonMatchingParamValues({'intensity', 'epochTime'} ,1 : 5 : 100);
             obj.verifyEqual(params, {'stimTime'});
             
             obj.verifyLength(values{1}, 20);
@@ -230,7 +230,7 @@ classdef CellDataTest < matlab.unittest.TestCase
             expected = arrayfun(@(i)cellstr([num2str(20 * i) 'ms' ]), id(:)');
             obj.verifyEqual(actual, expected);
             
-            [params, values] = cellData.getNonMatchingParamValues({'intensity', 'stimTime'});
+            [params, values] = cellData.getNonMatchingParamValues({'intensity', 'stimTime', 'epochTime'});
             obj.verifyEmpty(params);
             obj.verifyEmpty(values);
             
@@ -245,13 +245,14 @@ classdef CellDataTest < matlab.unittest.TestCase
             verify();
             
             function verify()
-                obj.verifyEqual(params, {'intensity', 'stimTime'});
+                obj.verifyEqual(params, {'epochTime', 'intensity', 'stimTime'});
                 obj.verifyLength(values{1}, 20);
                 obj.verifyLength(values{2}, 20);
+                obj.verifyLength(values{3}, 20);
                 % test intensity values
-                obj.verifyEqual(values{1}, (10 * id(:)'))
+                obj.verifyEqual(values{2}, (10 * id(:)'))
                 % test again stimTime values
-                obj.verifyEqual(values{2}, expected);
+                obj.verifyEqual(values{3}, expected);
             end
             
             % Test for getParamValues
@@ -265,17 +266,17 @@ classdef CellDataTest < matlab.unittest.TestCase
             cellData.epochs = obj.epochs;
             
             [params, values] = cellData.getUniqueNonMatchingParamValues({'intensity'} ,1 : 5 : 100);
-            obj.verifyEqual(params, {'stimTime'});
+            obj.verifyEqual(params, {'epochTime', 'stimTime'});
             
-            obj.verifyLength(values{1}, 10);
+            obj.verifyLength(values{2}, 10);
             % get the first element (value corresponds to 'stimTime') from cell array
-            actual = values{1};
+            actual = values{2};
             id = 1 : 10;
             
             expected = arrayfun(@(i)cellstr([num2str(20 * i) 'ms' ]), id(:)');
             obj.verifyEqual(actual, expected);
             
-            [params, values] = cellData.getUniqueNonMatchingParamValues({'intensity', 'stimTime'});
+            [params, values] = cellData.getUniqueNonMatchingParamValues({'epochTime', 'intensity', 'stimTime'});
             obj.verifyEmpty(params);
             obj.verifyEmpty(values);
             
@@ -290,13 +291,13 @@ classdef CellDataTest < matlab.unittest.TestCase
             verify();
             
             function verify()
-                obj.verifyEqual(params, {'intensity', 'stimTime'});
-                obj.verifyLength(values{1}, 10);
+                obj.verifyEqual(params, {'epochTime', 'intensity', 'stimTime'});
+                obj.verifyLength(values{1}, 20);
                 obj.verifyLength(values{2}, 10);
                 % test intensity values
-                obj.verifyEqual(values{1}, (10 * id(:)'))
+                obj.verifyEqual(values{2}, (10 * id(:)'))
                 % test again stimTime values
-                obj.verifyEqual(values{2}, expected);
+                obj.verifyEqual(values{3}, expected);
             end
             
             [params, values] = cellData.getUniqueParamValues(1 : 5 : 100);
