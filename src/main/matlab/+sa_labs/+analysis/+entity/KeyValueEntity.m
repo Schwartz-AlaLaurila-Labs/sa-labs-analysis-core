@@ -33,7 +33,7 @@ classdef KeyValueEntity < handle & matlab.mixin.CustomDisplay
             end
         end
         
-        function v = getValue(obj, value) %#ok
+        function v = getValue(obj, value)
             if strcmpi(value, 'null')
                 v = [];
             elseif isnumeric(value)
@@ -47,6 +47,11 @@ classdef KeyValueEntity < handle & matlab.mixin.CustomDisplay
         function values = formatCells(obj, values) %#ok
             
             if ~ iscell(values)
+                return;
+            end
+            
+            if all(cellfun(@isempty, values))
+                values = {};
                 return;
             end
             
