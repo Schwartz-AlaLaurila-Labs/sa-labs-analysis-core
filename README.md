@@ -14,8 +14,8 @@
 1. It follows maven style source code organization
 2. All the dependency will be present in toolbox folder
 
-### Usage TODO
-
+### Usage 
+TODO
 ## Requirements
 
 - Matlab 2016a+
