@@ -91,7 +91,8 @@ classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
                     end
                 end
                 lastProtocolId = protocolId;
-                parameterMap = obj.buildAttributes(h5Epochs(index).Groups(2), parameterMap);
+%                 parameterMap = obj.buildAttributes(h5Epochs(index).Groups(2), parameterMap);  % WHY IS THIS HARDCODED?
+                parameterMap = obj.buildAttributes(h5Epochs(index).Groups(end-2), parameterMap);  % DIRTY FIX AFTER BATHTEMP ADDITION
                 parameterMap('epochNum') = i;
                 parameterMap('epochStartTime') = sortedEpochTime(i);
                 parameterMap('epochTime') = util.dotnetTicksToDateTime(epochsTime(index));
@@ -99,7 +100,9 @@ classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
                 e = entity.EpochData();
                 e.parentCell = cell;
                 e.attributes = containers.Map(parameterMap.keys, parameterMap.values);
-                e.dataLinks = obj.getResponses(h5Epochs(index).Groups(3).Groups);
+%                 e.dataLinks =
+%                 obj.getResponses(h5Epochs(index).Groups(3).Groups); % WHY IS THIS HARDCODED?
+                e.dataLinks = obj.getResponses(h5Epochs(index).Groups(end-1).Groups); % DIRTY FIX AFTER BATHTEMP ADDITION
                 fname = obj.fname;
                 e.responseHandle = @(e, path) h5read(e.parentCell.get('h5File'), path);
                 epochData(i) = e;
@@ -109,7 +112,7 @@ classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
             cell.epochs = epochData;
             cell.attributes('Nepochs') = numel(h5Epochs);
             cell.attributes('parsedDate') = datestr(datetime('today'));
-            cell.attributes('symphonyVersion') = 2.0;
+            cell.attributes('symphonyVersion') = 2.0; % WHY IS THIS HARDCODED?
             cell.attributes('h5File') = obj.fname;
             cell.attributes('recordingLabel') =  ['c' char(regexp(label, '[0-9]+', 'match'))];
         end
