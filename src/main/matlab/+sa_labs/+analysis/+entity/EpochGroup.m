@@ -35,7 +35,7 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
             import sa_labs.analysis.app.*;
             p = unique(obj.get(key));
             if numel(p) > 1
-                throw(Exceptions.MULTIPLE_VALUE_FOUND.create('warning', true, 'message', obj.name))
+                Exceptions.MULTIPLE_VALUE_FOUND.create('warning', true, 'message', obj.name);
             end
         end
 
