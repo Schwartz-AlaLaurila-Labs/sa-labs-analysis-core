@@ -272,8 +272,7 @@ classdef OfflineAnalaysisManager < handle & mdepin.Bean
             for group = each(groups)
                 resultIdArray = strsplit(group.splitValue, '-');
                 cellData = dao.findCell(resultIdArray{end});
-                protocol = group.parameters.analysisProtocol;
-
+                protocol = group.get('analysisProtocol');
                 analysis = factory.createOfflineAnalysis(protocol, cellData);
                 analysis.featureBuilder.dataStore = dao.findAnalysisResult(group.splitValue);
                 analysis.addFeaturesToGroup(epochGroup, functions);
