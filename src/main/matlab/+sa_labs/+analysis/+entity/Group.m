@@ -110,6 +110,13 @@ classdef Group < sa_labs.analysis.entity.KeyValueEntity
 
 	    function appendFeature(obj, newFeatures)
 	        
+          % Delete old existing features
+          key = newFeatures(1).description.id;
+          f = obj.getFeatures(key);
+          if ~ isempty(f) && ismember({newFeatures(1).uuid}, {f.uuid})
+              obj.featureMap.remove(key);
+          end
+        
 	        for i = 1 : numel(newFeatures)
 	            key = newFeatures(i).description.id;
 	            

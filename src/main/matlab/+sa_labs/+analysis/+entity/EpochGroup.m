@@ -153,9 +153,11 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
         end
 
         function p = getInputParametersForFunction(obj, functionName)
-            if ~ isKey(obj.functionParameterMap, functionName)
-                obj.setInputParametersForFunction(functionName);
-            end
+%             if ~ isKey(obj.functionParameterMap, functionName)
+%                 obj.setInputParametersForFunction(functionName);
+%             end
+            % Change so that parameters are always re-set
+            obj.setInputParametersForFunction(functionName);
             p = obj.functionParameterMap(functionName);
         end
 
