@@ -36,18 +36,24 @@ classdef Group < sa_labs.analysis.entity.KeyValueEntity
 	        description.id = id;
 	        
 	        oldFeature = obj.getFeatures(id);
-	        feature = entity.Feature(description, data);
-	        
-	        if ~ isempty(oldFeature) && isKey(propertyMap, 'append') && propertyMap('append')
+            % The order of if's is important here            
+            if isempty(oldFeature)
+                feature = entity.Feature(description, data);
+                 obj.featureMap(id) = feature;
+                return
+            end
+            
+	        if  ~ isempty(oldFeature) && isKey(propertyMap, 'append') && propertyMap('append')
+                feature = entity.Feature(description, data);
 	            obj.appendFeature(feature);
-	            return
+                return
 	        end
 	        
 	        if ~ isempty(oldFeature)
-	            feature.uuid = oldFeature.uuid;
+	            oldFeature.data = data;
+                oldFeature.description = description;
 	            app.Exceptions.OVERWRIDING_FEATURE.create('warning', true, 'message', strcat(id, ' for  node ', obj.name));
 	        end
-	        obj.featureMap(id) = feature;
 	    end
 	    
 	    function features = getFeatures(obj, keys)
@@ -108,8 +114,7 @@ classdef Group < sa_labs.analysis.entity.KeyValueEntity
 
 	methods (Hidden)
 
-	    function appendFeature(obj, newFeatures)
-	        
+	    function appendFeature(obj, newFeatures)        
 	        for i = 1 : numel(newFeatures)
 	            key = newFeatures(i).description.id;
 	            

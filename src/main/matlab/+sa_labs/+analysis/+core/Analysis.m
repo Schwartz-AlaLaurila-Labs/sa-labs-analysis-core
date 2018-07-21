@@ -68,7 +68,7 @@ classdef Analysis < handle
         end
         
         function addFeaturesToGroup(obj, groups, functions)
-            [map, order] = obj.getFeaureGroupsByProtocol();
+            [map, order] = obj.getEpochGroupsByProtocol();
             keys = map.keys();
             parameters = keys(order);
             
@@ -96,7 +96,7 @@ classdef Analysis < handle
     methods (Access = protected)
         
         function extractFeatures(obj)
-            [map, order] = obj.getFeaureGroupsByProtocol();
+            [map, order] = obj.getEpochGroupsByProtocol();
             keys = map.keys();
             parameters = keys(order);
             
@@ -115,7 +115,7 @@ classdef Analysis < handle
     
     methods (Access = protected, Abstract)
         build(obj)
-        getFeaureGroupsByProtocol(obj)
+        getEpochGroupsByProtocol(obj)
     end
     
     methods (Access = private)
@@ -125,10 +125,8 @@ classdef Analysis < handle
             for i = 1 : numel(functions)
                 func = str2func(functions{i});
                 try
-%                     functionName = obj.analysisProtocol.getFunctionName(func);
                     for group = epochGroups
                         p = group.getInputParametersForFunction(functions{i});
-%                         p = group.getInputParametersForFunction(functionName);
                         func(obj, group, p);
                     end
                     

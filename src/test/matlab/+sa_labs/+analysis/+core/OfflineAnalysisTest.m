@@ -38,14 +38,16 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             
             % Happy epoch and cell data !
             epochs = entity.EpochData.empty(0, 2);
-            
+            epochData = @(obj, p) struct('quantity', [1;2;3], 'units', ['pA'; 'pA'; 'pA']);
             epochs(1) = entity.EpochData();
             epochs(1).attributes = containers.Map({'stimTime', 'tailTime', 'group'}, {500, 1000, 'G1'});
             epochs(1).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
+            epochs(1).responseHandle = epochData;
             
             epochs(2) = entity.EpochData();
             epochs(2).attributes = containers.Map({'stimTime', 'tailTime', 'group'}, {500, 2000, 'G1'});
             epochs(2).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
+            epochs(2).responseHandle = epochData;
             
             mockedCellData = entity.CellData();
             mockedCellData.attributes('recordingLabel') = obj.recordingLabel;
@@ -88,6 +90,7 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             
             import sa_labs.analysis.*;
             expectedRoot = @(id) strcat('analysis==', id, '-', obj.recordingLabel);
+            epochData = @(obj, p) struct('quantity', [1;2;3], 'units', ['pA'; 'pA'; 'pA']);
             
             structure = struct();
             structure.type = 'test-analysis';
@@ -98,10 +101,11 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             epochs(1) = entity.EpochData();
             epochs(1).attributes = containers.Map({'stimTime', 'tailTime', 'group'}, {500, 1000, 'G1'});
             epochs(1).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
-            
+            epochs(1).responseHandle = epochData;
             epochs(2) = entity.EpochData();
             epochs(2).attributes = containers.Map({'stimTime', 'tailTime', 'group'}, {500, 2000, 'G1'});
             epochs(2).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
+            epochs(2).responseHandle = epochData;
             
             mockedCellData = entity.CellData();
             mockedCellData.attributes('recordingLabel') = obj.recordingLabel;
@@ -129,7 +133,7 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             obj.verifyEqual(actualParentParemeters.group, {'G1', 'G1'});
         end
         
-        function  testBuildTreeMutlipleLevelMultipleBranches(obj)
+        function testBuildTreeMutlipleLevelMultipleBranches(obj)
             import sa_labs.analysis.*;
             
             %    '                          analysis==test-analysis-c1 ( 1 )                           '
@@ -149,41 +153,50 @@ classdef OfflineAnalysisTest < matlab.unittest.TestCase
             structure.devices.splitValue = {'Amp1'};
             structure.featureManager = 'sa_labs.analysis.core.FeatureTreeManager';
             
+            epochData = @(obj, p) struct('quantity', [1;2;3], 'units', ['pA'; 'pA'; 'pA']);
             epochs = entity.EpochData.empty(0, 8);
             % epochs for Group (g1)
             epochs(1) = entity.EpochData();
             epochs(1).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 20, 'G1', 0.01});
             epochs(1).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
+            epochs(1).responseHandle = epochData;
             
             epochs(2) = entity.EpochData();
             epochs(2).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 20, 'G1', 0.02});
             epochs(2).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
-            
+            epochs(2).responseHandle = epochData;
+             
             epochs(3) = entity.EpochData();
             epochs(3).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 40, 'G1', 0.03});
             epochs(3).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
-            
+            epochs(3).responseHandle = epochData;
+
             epochs(4) = entity.EpochData();
             epochs(4).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 40, 'G1', 0.04});
             epochs(4).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
-            
+            epochs(4).responseHandle = epochData;
+
             % epochs for Group (g2)
             epochs(5) = entity.EpochData();
             epochs(5).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 20, 'G2', 0.01});
             epochs(5).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
-            
+            epochs(5).responseHandle = epochData;
+
             epochs(6) = entity.EpochData();
             epochs(6).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 20, 'G2', 0.02});
             epochs(6).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
-            
+            epochs(6).responseHandle = epochData;
+
             epochs(7) = entity.EpochData();
             epochs(7).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 40, 'G2', 0.03});
             epochs(7).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
-            
+            epochs(7).responseHandle = epochData;
+
             epochs(8) = entity.EpochData();
             epochs(8).attributes = containers.Map({'stimTime', 'EpochGroup', 'rstars'}, { 40, 'G2', 0.04});
             epochs(8).dataLinks = containers.Map({'Amp1', 'Amp2'}, {'/Amp1', '/Amp2'});
-            
+            epochs(8).responseHandle = epochData;
+
             % Amplifier specific cell data
             mockedCellData = entity.CellData();
             mockedCellData.attributes('recordingLabel') = obj.recordingLabel;

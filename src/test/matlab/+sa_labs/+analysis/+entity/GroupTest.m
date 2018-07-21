@@ -155,6 +155,34 @@ classdef GroupTest < matlab.unittest.TestCase
             obj.verifyEqual([features(:).data], [{(1 : 1000)'}, {ones(1000, 1)}]);
         end
         
+        % More on: https://github.com/Schwartz-AlaLaurila-Labs/sa-labs-analysis-core/issues/37
+        function testUpdateForModifiedFeatures(obj)
+            import sa_labs.analysis.entity.*;
+            
+            % create a child feature group
+            group = Group('Child==param');
+            
+            % create two features
+            group.createFeature('TEST_FIRST', 1 : 1000, 'properties', []);
+            group.createFeature('TEST_SECOND', ones(1,1000), 'properties', []);
+            
+            % create a parent feature group and push the second feature
+            parentGroup = Group('Parent==param');
+            parentGroup.update(group, 'TEST_SECOND', 'TEST_SECOND');
+            
+            % confirm everything is ok
+            data = parentGroup.getFeatureData('TEST_SECOND');
+            obj.verifyEqual(data, {ones(1000, 1)});
+            
+            % update the TEST_SECOND feature in child
+            group.createFeature('TEST_SECOND', zeros(1,1000), 'properties', []);
+            parentGroup.update(group, 'TEST_SECOND', 'TEST_SECOND');
+            
+            % confirm whether it updated the parent feature 
+            data = parentGroup.getFeatureData('TEST_SECOND');
+            obj.verifyEqual(data, {zeros(1000, 1)});
+        end
+        
     end
     
 end
