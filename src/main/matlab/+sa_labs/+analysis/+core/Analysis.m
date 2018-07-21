@@ -96,7 +96,7 @@ classdef Analysis < handle
     methods (Access = protected)
         
         function extractFeatures(obj)
-            [map, order] = obj.getFeaureGroupsByProtocol();
+            [map, order] = obj.getEpochGroupsByProtocol();
             keys = map.keys();
             parameters = keys(order);
             
