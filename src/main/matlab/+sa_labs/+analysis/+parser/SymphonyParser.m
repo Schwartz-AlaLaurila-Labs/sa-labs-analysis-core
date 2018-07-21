@@ -33,6 +33,7 @@ classdef SymphonyParser < handle
             if ischar(h5group)
                 h5group = h5info(obj.fname, h5group);
             end
+            try
             attributes = h5group.Attributes;
 
             for i = 1 : length(attributes)
@@ -49,6 +50,9 @@ classdef SymphonyParser < handle
                     name = attributes(i).Name(root(end) + 1 : end);
                 end
                 map(name) = value;
+            end
+            catch e %#ok
+                obj.log.debug(['cannot extract attributes for: [ ' h5group.Name ' ]']);
             end
         end
 
