@@ -66,9 +66,11 @@ classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
 
             lastProtocolId = [];
             epochData = entity.EpochData.empty(numel(h5Epochs), 0);
+            obj.log.debug(['Building cell data for label [' label ']']);
+            obj.log.debug(['Total number of epochs [' num2str(numel(h5Epochs)) ']']);
 
             for i = 1 : numel(h5Epochs)
-
+                obj.log.trace(['Processing epoch #' num2str(i)]);
                 index = indices(i);
                 epochPath = h5Epochs(index).Name;
                 [protocolId, name, protocolPath] = obj.getProtocolId(epochPath);
@@ -83,16 +85,13 @@ classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
                     % add epoch group properties to current prtoocol
                     % parameters
                     group = h5Epochs(index).Name;
-                    endOffSet = strfind(group, '/epochBlocks');              
+                    endOffSet = strfind(group, '/epochBlocks');
                     parameterMap = obj.buildAttributes(group(1 : endOffSet), parameterMap);
                     parameterMap = obj.buildAttributes([group(1 : endOffSet) 'properties'], parameterMap);
 
                 end
                 lastProtocolId = protocolId;
-                
-                for group = each(h5Epochs(index).Groups)
-                    parameterMap = obj.buildAttributes(group, parameterMap);
-                end
+                parameterMap = obj.buildAttributes(h5Epochs(index).Groups(end-2), parameterMap);  % DIRTY FIX AFTER BATHTEMP ADDITION
                 parameterMap('epochNum') = i;
                 parameterMap('epochStartTime') = sortedEpochTime(i);
                 parameterMap('epochTime') = util.dotnetTicksToDateTime(epochsTime(index));
@@ -100,7 +99,7 @@ classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
                 e = entity.EpochData();
                 e.parentCell = cell;
                 e.attributes = containers.Map(parameterMap.keys, parameterMap.values);
-                
+
                 e.dataLinks = obj.getResponses(h5Epochs(index).Groups(end-1).Groups); % DIRTY FIX AFTER BATHTEMP ADDITION
                 e.responseHandle = @(e, path) h5read(e.parentCell.get('h5File'), path);
                 epochData(i) = e;
