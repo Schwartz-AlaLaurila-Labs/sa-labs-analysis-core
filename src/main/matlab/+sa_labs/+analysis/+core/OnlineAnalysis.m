@@ -67,7 +67,7 @@ classdef OnlineAnalysis < sa_labs.analysis.core.Analysis
             end
         end
         
-        function [map, order] = getFeaureGroupsByProtocol(obj)
+        function [map, order] = getEpochGroupsByProtocol(obj)
             p = obj.splitParameters;
             map = containers.Map();
             order = [];
