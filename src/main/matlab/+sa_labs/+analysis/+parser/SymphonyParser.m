@@ -30,12 +30,14 @@ classdef SymphonyParser < handle
             if nargin < 3
                 map = containers.Map();
             end
+            try
             if ischar(h5group)
+                groupName = h5group;
                 h5group = h5info(obj.fname, h5group);
             end
-            try
             attributes = h5group.Attributes;
-
+            groupName = h5group.Name;
+            
             for i = 1 : length(attributes)
                 name = attributes(i).Name;
                 root = strfind(name, '/');
@@ -52,7 +54,7 @@ classdef SymphonyParser < handle
                 map(name) = value;
             end
             catch e %#ok
-                obj.log.debug(['cannot extract attributes for: [ ' h5group.Name ' ]']);
+                obj.log.debug(['cannot extract attributes for: [ ' groupName ' ]']);
             end
         end
 
