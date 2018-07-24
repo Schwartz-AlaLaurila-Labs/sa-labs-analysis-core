@@ -86,7 +86,8 @@ classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
                     % parameters
                     group = h5Epochs(index).Name;
                     endOffSet = strfind(group, '/epochBlocks');
-                    parameterMap = obj.buildAttributes(group(1 : endOffSet), parameterMap);
+                    epochGroupLabel = h5readatt(obj.fname, group(1 : endOffSet), 'label');
+                    parameterMap('epochGroupLabel') = epochGroupLabel;
                     parameterMap = obj.buildAttributes([group(1 : endOffSet) 'properties'], parameterMap);
 
                 end
@@ -225,6 +226,5 @@ classdef SymphonyV2Parser < sa_labs.analysis.parser.SymphonyParser
         end
 
     end
-
 end
 
