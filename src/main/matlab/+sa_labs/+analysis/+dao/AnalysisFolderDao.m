@@ -90,7 +90,7 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
 
             for i = 1 : numel(pattern)
                 p = pattern{i};
-                info = dir([obj.repository.analysisFolder filesep 'cellData' filesep char(p) '*.mat']);
+                info = dir([obj.repository.analysisFolder filesep 'cellData' filesep char(p) '.mat']);
                 fnames = arrayfun(@(d) {d.name(1 : end-4)}, info);
                 names = [fnames; names]; %#ok
             end
