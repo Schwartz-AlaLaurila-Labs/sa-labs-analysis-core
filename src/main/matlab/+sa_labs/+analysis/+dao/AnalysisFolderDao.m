@@ -84,7 +84,7 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
 
             if ~ iscellstr(pattern)
                 pattern = obj.repository.dateFormat(pattern);
-                pattern = {[pattern '*c']};
+                pattern = {[pattern '*c*']};
             end
             isCellDataByAmp = all(cellfun(@(p) any(strfind(p, 'Amp')), pattern));
 
