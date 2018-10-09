@@ -52,7 +52,7 @@ classdef DaoTest < matlab.unittest.TestCase
 
         function testFindRawDataFiles(obj)
             dao = obj.beanFactory.getBean('analysisDao');
-            files = dao.findRawDataFiles(datestr(date, obj.DATE_FORMAT));
+            files = dao.findRawDataFiles([datestr(date, obj.DATE_FORMAT) '*']);
             obj.verifyEqual(numel(files), obj.NO_OF_FILES);
 
             for i = 1 : numel(files)

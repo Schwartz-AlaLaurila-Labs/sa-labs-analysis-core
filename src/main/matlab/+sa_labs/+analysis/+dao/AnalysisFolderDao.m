@@ -48,14 +48,15 @@ classdef AnalysisFolderDao < sa_labs.analysis.dao.AnalysisDao & mdepin.Bean
             end
         end
 
-        function fnames = findRawDataFiles(obj, date)
+        function fnames = findRawDataFiles(obj, pattern)
 
-            if ~ ischar(date)
-                date = obj.repository.dateFormat(date);
+            if ~ ischar(pattern)
+                pattern = obj.repository.dateFormat(pattern);
+                pattern = {[pattern '*c*']};
             end
 
             path = [obj.repository.rawDataFolder filesep];
-            info = dir([path date '*.h5']);
+            info = dir([path pattern '.h5']);
             fnames = arrayfun(@(d) [path d.name], info, 'UniformOutput', false);
         end
 
