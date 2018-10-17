@@ -21,14 +21,14 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
             obj.treeIndices.ds3 = obj.builder.addEpochGroup(obj.treeIndices.amp2, 'EpochGroup', 'Light_Step_20', 1:250);
             obj.treeIndices.ds4 = obj.builder.addEpochGroup(obj.treeIndices.amp2, 'EpochGroup', 'Light_Step_400', 251:500);
             
-            obj.treeIndices.ds1_rstar_0_01 = obj.builder.addEpochGroup(obj.treeIndices.ds1, 'rstar', '0.01', 1:2:250);
-            obj.treeIndices.ds1_rstar_0_1 = obj.builder.addEpochGroup(obj.treeIndices.ds1, 'rstar', '0.1', 2:2:250);
-            obj.treeIndices.ds2_rstar_0_01 = obj.builder.addEpochGroup(obj.treeIndices.ds2, 'rstar', '0.01', 1:2:250);
-            obj.treeIndices.ds2_rstar_0_1 = obj.builder.addEpochGroup(obj.treeIndices.ds2, 'rstar', '0.1', 2:2:250);
-            obj.treeIndices.ds3_rstar_0_01 = obj.builder.addEpochGroup(obj.treeIndices.ds3, 'rstar', '0.01', 1:2:250);
-            obj.treeIndices.ds3_rstar_0_1 = obj.builder.addEpochGroup(obj.treeIndices.ds3, 'rstar', '0.1', 2:2:250);
-            obj.treeIndices.ds4_rstar_0_01 = obj.builder.addEpochGroup(obj.treeIndices.ds4, 'rstar', '0.01', 1:2:250);
-            obj.treeIndices.ds4_rstar_0_1 = obj.builder.addEpochGroup(obj.treeIndices.ds4, 'rstar', '0.1', 2:2:250);
+            obj.treeIndices.ds1_rstar_0_01 = obj.builder.addEpochGroup(obj.treeIndices.ds1, 'rstar', 0.01, 1:2:250);
+            obj.treeIndices.ds1_rstar_0_1 = obj.builder.addEpochGroup(obj.treeIndices.ds1, 'rstar', 0.1, 2:2:250);
+            obj.treeIndices.ds2_rstar_0_01 = obj.builder.addEpochGroup(obj.treeIndices.ds2, 'rstar', 0.01, 1:2:250);
+            obj.treeIndices.ds2_rstar_0_1 = obj.builder.addEpochGroup(obj.treeIndices.ds2, 'rstar', 0.1, 2:2:250);
+            obj.treeIndices.ds3_rstar_0_01 = obj.builder.addEpochGroup(obj.treeIndices.ds3, 'rstar', 0.01, 1:2:250);
+            obj.treeIndices.ds3_rstar_0_1 = obj.builder.addEpochGroup(obj.treeIndices.ds3, 'rstar', 0.1, 2:2:250);
+            obj.treeIndices.ds4_rstar_0_01 = obj.builder.addEpochGroup(obj.treeIndices.ds4, 'rstar', 0.01, 1:2:250);
+            obj.treeIndices.ds4_rstar_0_1 = obj.builder.addEpochGroup(obj.treeIndices.ds4, 'rstar', 0.1, 2:2:250);
             
             disp('Tree information - ');
             obj.builder.getStructure().tostring() % print tree
@@ -55,7 +55,7 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
             amp1Lightstep = amp1LightstepsNodes(1);
             obj.builder.collect([childNodes(:).id], 'splitValue', 'rstar_from_child')
             
-            obj.verifyEqual(amp1Lightstep.get('rstar_from_child'), {'0.01', '0.1'});
+            obj.verifyEqual(amp1Lightstep.get('rstar_from_child'), [0.01, 0.1]);
             handle = @()obj.builder.collect([childNodes(:).id], 'splitValue', 'splitValue');
             obj.verifyError(handle,'MATLAB:class:SetProhibited');
         end
@@ -93,6 +93,13 @@ classdef FeatureTreeBuilderTest < matlab.unittest.TestCase
             obj.verifyEmpty(nodes);
             nodes = obj.builder.findEpochGroup([]);
             obj.verifyEmpty(nodes);
+        end
+
+        function testFind(obj)
+            obj.verifyLength(obj.builder.find('rstar==0.').toArray(), 8);
+            % Test if varargs has value parameter
+            obj.verifyLength(obj.builder.find('rstar', 'value', 0.1).toArray(), 4);
+            obj.verifyLength(obj.builder.find('rstar', 'value', '0.1').toArray(), 4);
         end
         
         function testGetAllChildrensByName(obj)
