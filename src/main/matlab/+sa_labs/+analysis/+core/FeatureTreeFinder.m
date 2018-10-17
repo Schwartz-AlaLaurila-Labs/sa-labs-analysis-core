@@ -33,9 +33,12 @@ classdef FeatureTreeFinder < handle
             ip = inputParser;
             ip.addParameter('hasParent', []);
             ip.addParameter('hasParentId', []);
+            ip.addParameter('value', []);
+
             ip.parse(varargin{:});
             hasParent = ip.Results.hasParent;
             hasParentId = ip.Results.hasParentId;
+            value = ip.Results.value;
 
             if any(hasParentId)
                 parentGroups = obj.getEpochGroups(hasParentId);
@@ -45,16 +48,20 @@ classdef FeatureTreeFinder < handle
 
             if all(isempty(parentGroups))
                 query = linq(obj.findEpochGroup(name));
-                return;
+            else
+                indices = [];
+                for id = [parentGroups(:).id]
+                    indices = [indices, obj.findEpochGroupId(name, id)]; %#ok;
+                end
+                epochGroups = obj.getEpochGroups(indices);
+                query = linq(epochGroups);
             end
-            indices = [];
-            for id = [parentGroups(:).id]
-                indices = [indices, obj.findEpochGroupId(name, id)]; %#ok;
+
+            if ~ isempty(value)
+                query = query.where(@(g) strcmp(num2str(value), num2str(g.splitValue)));
             end
-            epochGroups = obj.getEpochGroups(indices);
-            query = linq(epochGroups);
         end
-        
+
         function groups = findInBranch(obj, group, name)
             groups = [];
             for group = each(obj.getEpochGroups(obj.tree.findpath(group.id, 1)))
