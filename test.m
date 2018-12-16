@@ -47,6 +47,6 @@ function test(package)
         
         [log, ~] = logging.getLogger(sa_labs.analysis.app.Constants.ANALYSIS_LOGGER, 'path', 'test.log');
         log.setLogLevel(logging.logging.ALL);
-        log.setCommandWindowLevel(logging.logging.INFO);
+        log.setCommandWindowLevel(logging.logging.DEBUG);
     end
 end

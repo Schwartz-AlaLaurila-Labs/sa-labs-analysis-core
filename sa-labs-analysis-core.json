@@ -14,6 +14,21 @@
 		"update": "",
 		"url": "https:\/\/github.com\/Schwartz-AlaLaurila-Labs\/sa-labs-analysis-core"
 	},
+	{
+		"extra": "",
+		"flavor": "2.5",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "",
+		"name": "mksqlite",
+		"pathPlacement": "append",
+		"requirementHook": "",
+		"subfolder": "",
+		"toolboxRoot": "",
+		"type": "git",
+		"update": "",
+		"url": "https:\/\/github.com\/AndreasMartin72\/mksqlite"
+	},
     {
 		"extra": "",
 		"flavor": "",

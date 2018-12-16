@@ -11,13 +11,24 @@ classdef ParserFactory < handle & mdepin.Bean
 
         function obj = getInstance(fname)
 
-            import sa_labs.analysis.parser.*
-            version = SymphonyParser.getVersion(fname);
-            if version == 2
-                obj = SymphonyV2Parser(fname);
-            else
-                obj = SymphonyV1Parser(fname);
+            import sa_labs.analysis.*
+
+            if factory.ParserFactory.isOvationFile(fname)
+                obj = parser.OvationParser(fname);
+                return
             end
+
+            version = parser.SymphonyParser.getVersion(fname);
+            if version == 2
+                obj = parser.SymphonyV2Parser(fname);
+            else
+                obj = parser.SymphonyV1Parser(fname);
+            end
+        end
+        
+        function tf = isOvationFile(fname)
+            [baseDir, name, ~] = fileparts(fname);
+            tf = exist([baseDir filesep name '.auisql'], 'file');
         end
     end
 end
