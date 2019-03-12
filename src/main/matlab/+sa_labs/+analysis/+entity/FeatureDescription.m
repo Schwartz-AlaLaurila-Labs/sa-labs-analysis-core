@@ -8,6 +8,7 @@ classdef FeatureDescription < dynamicprops
         chartType
         xAxis
         downSampleFactor
+        isBasicFeature
     end
     
     methods
@@ -24,7 +25,7 @@ classdef FeatureDescription < dynamicprops
             if isempty(props)
                 return
             end
-            
+            obj.isBasicFeature = false;
             obj.setProperties(props);
         end
         

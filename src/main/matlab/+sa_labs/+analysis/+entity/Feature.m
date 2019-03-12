@@ -34,7 +34,11 @@ classdef Feature < handle & matlab.mixin.Heterogeneous
             d = obj.dataHandler;
             
             if isa(d, 'function_handle')
-                d = obj.dataHandler();
+                if(obj.description.isBasicFeature)
+                    d = obj.dataHandler(obj.description.epoch);
+                else
+                    d = obj.dataHandler();
+                end
                 obj.downSampled = false;
             end
             d = obj.formatData(d);

@@ -49,15 +49,16 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
 
             for epoch = each(epochs)
                 path = epoch.dataLinks(obj.device);
-                responseHandle = @() epoch.getEpochResponse(path);
                 key = obj.makeValidKey(Constants.EPOCH_KEY_SUFFIX);
 
-                f = obj.createFeature(key, @() transpose(getfield(responseHandle(), 'quantity')), 'append', true);
+                f = obj.createFeature(key, @(epoch) transpose(getfield(epoch.getEpochResponse(path), 'quantity')), 'append', true);
                 f.description.setFromMap(epoch.attributes);
+                f.description.set('epoch', epoch);
+                f.description.set('isBasicFeature', true);
                 f.description.set('device', obj.device);
 
-                response = responseHandle();
-                if isfield(response, 'units');
+                response = epoch.getEpochResponse(path);
+                if isfield(response, 'units')
                     units = getfield(response, 'units');
                     f.description.set('units', deblank(units(:,1)'));
                 end
@@ -65,7 +66,9 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
                 for derivedResponseKey = each(epoch.derivedAttributes.keys)
                     if obj.hasDevice(derivedResponseKey)
                         key = obj.makeValidKey(derivedResponseKey);
-                        obj.createFeature(key, @() epoch.derivedAttributes(derivedResponseKey), 'append', true);
+                        f = obj.createFeature(key, @(epoch) epoch.derivedAttributes(derivedResponseKey), 'append', true);
+                        f.description.set('isBasicFeature', true);
+                        f.description.set('epoch', epoch);
                     end
                 end
             end
