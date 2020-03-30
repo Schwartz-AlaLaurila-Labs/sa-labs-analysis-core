@@ -36,7 +36,10 @@ classdef EpochGroup < sa_labs.analysis.entity.Group
             p = unique(obj.get(key));
             if numel(p) > 1
                 Exceptions.MULTIPLE_VALUE_FOUND.create('warning', true, 'message', obj.name);
+            elseif numel(p) == 0
+              p = false;
             end
+            
         end
 
         function populateEpochResponseAsFeature(obj, epochs)

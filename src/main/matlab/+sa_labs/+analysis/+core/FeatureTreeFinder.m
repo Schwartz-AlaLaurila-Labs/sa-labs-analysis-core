@@ -127,6 +127,20 @@ classdef FeatureTreeFinder < handle
             childrens = obj.tree.getchildren(epochGroup.id);
             childEpochGroups = obj.getEpochGroups(childrens);
         end
+        
+        function leafParentGroups = getLeafParentEpochGroups(obj, epochGroup)
+            leafParentGroups = [];
+            
+            if obj.isBasicEpochGroup(epochGroup)
+                return;    
+            end
+            leafs = obj.tree.findleaves(epochGroup.id);
+            parent = obj.tree.getparent(leafs(1));
+            parents = obj.tree.getsiblings(parent);
+            leafParentGroups = obj.getEpochGroups(parents);
+%             grandParents = unique(arrayfun(@(i) obj.tree.getparent(obj.tree.getparent(i)), leafs));
+%             leafParentGroups = arrayfun(@(i) obj.getEpochGroups(obj.tree.getchildren(i)), grandParents, 'UniformOutput', false);
+        end
     end
     
 end
